@@ -1,0 +1,1510 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ELMeKS.digital Raumplaner</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3b82f6">
+    <link rel="apple-touch-icon" href="logo/icon-192.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- PDF Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+    
+    <script>
+      function togglePanel(header) {
+        const parent = header.parentElement;
+        const wasClosed = parent.classList.contains('collapsed');
+        const sidebar = parent.closest('.sidebar, .sidebar-right');
+        if(sidebar) {
+            sidebar.querySelectorAll('.panel').forEach(p => {
+                if(p !== parent) p.classList.add('collapsed');
+            });
+        }
+        if (wasClosed) parent.classList.remove('collapsed');
+        else parent.classList.add('collapsed');
+      }
+    </script>
+
+    <style>
+      :root { 
+        --bg-dark: #0f1012;
+        --bg-panel: #1a1b1e;
+        --border: #2c2e33;
+        --primary: #3b82f6; /* Modernes Royal Blue */
+        --primary-glow: rgba(59, 130, 246, 0.5);
+        --text: #9ca3af;
+        --text-light: #f3f4f6;
+        --danger: #ef4444;
+        --warning: #f59e0b;
+        --success: #10b981;
+        --btn-bg: #27272a;
+      }
+      
+      body { 
+        margin: 0; overflow: hidden; 
+        font-family: 'Inter', sans-serif; 
+        color: var(--text); background: var(--bg-dark); 
+        user-select: none; font-size: 14px;
+        -webkit-font-smoothing: antialiased;
+      }
+      
+      canvas { display: block; width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 0; }
+      
+      /* Filter Classes */
+      body.filter-grayscale canvas { filter: grayscale(100%); }
+      body.filter-sepia canvas { filter: sepia(100%); }
+      body.filter-invert canvas { filter: invert(100%); }
+      
+      /* Neuer Button oben rechts - Premium Look & Click Fix */
+      .app-info-btn {
+          /* Größe & Form */
+          padding: 10px 18px;            /* Größerer Klickbereich */
+          border-radius: 8px;            /* Passt besser zu den anderen Boxen */
+          font-size: 13px;               /* Lesbarer */
+          font-weight: 600;
+          
+          /* Farben & Glas-Effekt */
+          background: rgba(255, 255, 255, 0.06); 
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          color: #9ca3af;
+          
+          /* Layout */
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          
+          /* WICHTIG: Klickbarkeit erzwingen */
+          cursor: pointer;
+          position: relative; 
+          z-index: 10000;  /* Über allem anderen (Fix für Klick-Problem) */
+          pointer-events: auto !important; /* Erzwingt Maus-Interaktion */
+          
+          transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+          box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      }
+
+      .app-info-btn:hover {
+          background: rgba(59, 130, 246, 0.15); /* Primary Glow */
+          border-color: var(--primary);
+          color: white;
+          transform: translateY(-2px);
+          box-shadow: 0 8px 15px rgba(59, 130, 246, 0.15);
+      }
+      
+      .app-info-btn svg { opacity: 0.7; transition: 0.2s; }
+      .app-info-btn:hover svg { opacity: 1; stroke: var(--primary); }
+
+      /* === UI LAYER === */
+      #ui-layer { 
+        position: absolute; inset: 0; pointer-events: none; z-index: 10;
+        display: flex; flex-direction: column; justify-content: space-between;
+      }
+
+      /* === BACKGROUND CANVAS & GRID === */
+      #bg-canvas {
+          position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+          z-index: 1; pointer-events: auto;
+      }
+      
+      /* Technisches Raster Overlay - Stärker sichtbar */
+      .tech-grid-overlay {
+          position: absolute; inset: 0; z-index: 2; pointer-events: none;
+          background-size: 40px 40px;
+          background-image:
+            linear-gradient(to right, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+          mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+          -webkit-mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+      }
+
+      /* === HOMESCREEN REDESIGN === */
+      #homescreen { 
+        position: absolute; inset: 0; 
+        background: radial-gradient(circle at 50% 50%, #1a1b1e 0%, #000000 100%);
+        z-index: 5000; 
+        display: flex; align-items: center; justify-content: center;
+        overflow: hidden;
+      }
+
+      /* Container 16:9 Glassmorphism High-End */
+      .home-container {
+          position: relative; z-index: 10;
+          width: 960px; max-width: 95vw;
+          min-height: 540px;
+          display: grid;
+          grid-template-columns: 1.3fr 1fr;
+          background: rgba(20, 20, 23, 0.65);
+          backdrop-filter: blur(20px) saturate(180%);
+          -webkit-backdrop-filter: blur(20px) saturate(180%);
+          border-radius: 24px;
+          
+          /* Doppel-Border Effekt für 3D Tiefe */
+          box-shadow: 
+            0 0 0 1px rgba(255, 255, 255, 0.08), 
+            0 25px 50px -12px rgba(0, 0, 0, 0.8),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            
+          overflow: hidden;
+          opacity: 0; transform: translateY(20px) scale(0.98);
+          animation: enterUI 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.2s;
+      }
+
+      @keyframes enterUI {
+          to { opacity: 1; transform: translateY(0) scale(1); }
+      }
+
+      /* Linke Seite */
+      .home-left {
+          padding: 60px;
+          display: flex; flex-direction: column; justify-content: center;
+          border-right: 1px solid rgba(255,255,255,0.06);
+          position: relative;
+          background: linear-gradient(180deg, rgba(255,255,255,0.01) 0%, transparent 100%);
+      }
+      
+      /* Rechte Seite */
+      .home-right {
+          padding: 60px;
+          background: rgba(0,0,0,0.3);
+          display: flex; flex-direction: column; justify-content: space-between;
+      }
+
+      /* Animierter Gradient Titel */
+      /* Animierter Gradient Titel */
+      .home-title-large {
+          font-size: 3.5em; font-weight: 800; color: white;
+          /* FIX: Line-height erhöht und Padding unten hinzugefügt für das 'g' */
+          line-height: 1.2; 
+          padding-bottom: 10px;
+          margin: 0 0 5px 0; 
+          letter-spacing: -1.5px; 
+          
+          background: linear-gradient(90deg, #ffffff 0%, #a5c9ff 50%, #ffffff 100%);
+          background-size: 200% auto;
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          animation: shine 5s linear infinite;
+      }
+      
+      /* Style für Tasten-Kürzel im neuen Hilfebereich */
+      .key-badge {
+          display: inline-block; padding: 2px 6px; 
+          background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); 
+          border-radius: 4px; font-family: monospace; font-size: 11px; color: #fff;
+          margin-right: 5px;
+      }
+      @keyframes shine { to { background-position: 200% center; } }
+
+      .home-subtitle {
+          font-size: 1.15em; color: #9ca3af; font-weight: 400; margin-bottom: 50px;
+          line-height: 1.6; max-width: 90%;
+      }
+
+      /* Premium Buttons */
+      .action-buttons { display: flex; flex-direction: column; gap: 16px; }
+      
+      .big-btn {
+          padding: 20px 28px; border-radius: 14px; border: none;
+          background: #27272a;
+          color: white; font-size: 15px; font-weight: 600; cursor: pointer;
+          display: flex; align-items: center; justify-content: space-between;
+          transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+          border: 1px solid rgba(255,255,255,0.08);
+          position: relative; overflow: hidden;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      }
+      
+      /* Primary Button Highlight */
+      .big-btn.highlight {
+          background: linear-gradient(135deg, var(--primary) 0%, #2563eb 100%);
+          border: 1px solid rgba(255,255,255,0.2);
+          box-shadow: 0 10px 25px -5px var(--primary-glow);
+      }
+      .big-btn.highlight:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 15px 35px -5px var(--primary-glow);
+      }
+
+      /* Secondary Button Hover */
+      .big-btn.ghost:hover {
+          background: #3f3f46;
+          border-color: rgba(255,255,255,0.2);
+          transform: translateX(5px);
+      }
+
+      .big-btn svg { width: 20px; height: 20px; opacity: 0.8; }
+      .big-btn.highlight svg { opacity: 1; }
+
+      /* Rechte Seite Boxen */
+      .feature-box { margin-bottom: 35px; }
+      
+      .section-label {
+          font-size: 11px; text-transform: uppercase; letter-spacing: 2px;
+          color: #6b7280; font-weight: 700; margin-bottom: 20px;
+          display: flex; align-items: center; gap: 12px;
+      }
+      .section-label::after {
+          content: ""; height: 1px; flex-grow: 1; background: #374151;
+      }
+
+      .feature-list { list-style: none; padding: 0; margin: 0; }
+      .feature-item {
+          display: flex; gap: 15px; margin-bottom: 18px;
+          font-size: 13px; color: #d1d5db; line-height: 1.5;
+          align-items: flex-start;
+      }
+      
+      .icon-box {
+          width: 32px; height: 32px; border-radius: 8px;
+          background: rgba(255, 255, 255, 0.05);
+          display: flex; align-items: center; justify-content: center;
+          color: var(--primary);
+          flex-shrink: 0; border: 1px solid rgba(255,255,255,0.1);
+      }
+      .feature-item strong { color: white; display: block; margin-bottom: 2px; }
+
+      .settings-mini {
+          background: rgba(0,0,0,0.2);
+          padding: 16px; border-radius: 12px;
+          border: 1px solid rgba(255,255,255,0.05);
+      }
+      .mini-row {
+          display: flex; justify-content: space-between; align-items: center;
+          margin-bottom: 12px; font-size: 13px; color: #9ca3af;
+      }
+      .mini-row:last-child { margin-bottom: 0; }
+
+      .feedback-area {
+          margin-top: auto; padding-top: 20px; 
+          border-top: 1px solid rgba(255,255,255,0.1);
+          text-align: center; font-size: 12px; color: #6b7280;
+      }
+      .feedback-link {
+          color: #9ca3af; text-decoration: none; font-weight: 500;
+          transition: 0.2s; border-bottom: 1px dotted #555;
+      }
+      .feedback-link:hover { color: var(--primary); border-color: var(--primary); }
+
+      /* Animation Staggering */
+      .stagger-1 { opacity: 0; animation: fadeUp 0.6s ease forwards 0.4s; }
+      .stagger-2 { opacity: 0; animation: fadeUp 0.6s ease forwards 0.6s; }
+      .stagger-3 { opacity: 0; animation: fadeUp 0.6s ease forwards 0.8s; }
+      .stagger-4 { opacity: 0; animation: fadeUp 0.6s ease forwards 1.0s; }
+
+      @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(15px); }
+          to { opacity: 1; transform: translateY(0); }
+      }
+
+      /* === REST CSS (UI & MODALS) === */
+      .top-bar {
+        background: var(--bg-panel); height: 50px;
+        display: flex; align-items: center; padding: 0 15px;
+        border-bottom: 1px solid var(--border); pointer-events: auto;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3); gap: 10px;
+        z-index: 50; 
+      }
+      .brand { font-weight: 700; color: white; margin-right: 15px; letter-spacing: 0.5px; }
+      .separator { width: 1px; height: 20px; background: var(--border); margin: 0 5px; }
+      .spacer { flex-grow: 1; }
+
+      select, button {
+        background: var(--btn-bg); color: var(--text-light); border: 1px solid var(--border);
+        padding: 6px 12px; border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 13px;
+        transition: all 0.2s; outline: none; white-space: nowrap;
+      }
+      select:hover, button:hover { background: #3f3f46; border-color: #555; }
+      button:active { transform: translateY(1px); }
+      button:disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+      
+      button.primary { background: var(--primary); border-color: var(--primary); color: white; }
+      button.primary:hover { background: #2563eb; }
+      button.danger { color: var(--danger); border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.1); }
+      button.danger:hover { background: var(--danger); color: white; }
+      button.danger.solid { background: var(--danger); color: white; border-color: var(--danger); }
+      
+      button.icon-btn {
+        padding: 6px; display: flex; align-items: center; justify-content: center;
+        background: transparent; border-color: transparent; color: #9ca3af; width: 34px; height: 34px;
+      }
+      button.icon-btn:hover { background: rgba(255,255,255,0.1); color: white; }
+      
+      button.active { 
+        background: var(--primary); border-color: var(--primary); color: white; 
+        box-shadow: 0 2px 8px var(--primary-glow);
+      }
+
+      /* Sidebars */
+      .sidebar { position: absolute; top: 70px; left: 20px; bottom: 20px; width: 340px; display: flex; flex-direction: column; gap: 10px; pointer-events: none; overflow-y: auto; padding-right: 5px; z-index: 100; }
+      .sidebar-right { position: absolute; top: 70px; right: 20px; bottom: 20px; width: 300px; display: flex; flex-direction: column; gap: 10px; pointer-events: none; overflow-y: auto; padding-left: 5px; z-index: 40; }
+      .sidebar::-webkit-scrollbar, .sidebar-right::-webkit-scrollbar { width: 4px; }
+      .sidebar::-webkit-scrollbar-thumb, .sidebar-right::-webkit-scrollbar-thumb { background: #444; border-radius: 2px; }
+      
+      .panel {
+        background: var(--bg-panel); border: 1px solid var(--border);
+        border-radius: 8px; pointer-events: auto; overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.4); flex-shrink: 0;
+      }
+      .panel-header {
+        padding: 12px 15px; font-size: 11px; text-transform: uppercase; 
+        letter-spacing: 1px; color: #9ca3af; font-weight: 700; cursor: pointer;
+        display: flex; justify-content: space-between; align-items: center;
+        background: rgba(255,255,255,0.03); select-none; border-bottom: 1px solid rgba(0,0,0,0.2);
+      }
+      .panel-header:hover { background: rgba(255,255,255,0.06); color: white; }
+      .panel-header::after { content: '▼'; font-size: 10px; transition: transform 0.3s; }
+      .panel.collapsed .panel-header::after { transform: rotate(-90deg); }
+      .panel-content { padding: 15px; transition: max-height 0.3s ease-out; max-height: 600px; overflow-y: auto; overflow-x: hidden; }
+      .panel.collapsed .panel-content { max-height: 0; padding: 0 15px; opacity: 0; }
+
+      .sidebar-action-btn {
+        background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.3); color: var(--danger);
+        padding: 12px; border-radius: 6px; font-weight: 600; width: 100%;
+        text-transform: uppercase; font-size: 12px; margin-top: 10px; pointer-events: auto;
+        transition: 0.2s;
+      }
+      .sidebar-action-btn:hover { background: var(--danger); color: white; }
+      
+      .sidebar-undo-btn {
+        background: transparent; border: 1px solid #4b5563; color: #9ca3af;
+        padding: 8px; border-radius: 6px; font-weight: 600; width: 100%;
+        text-transform: uppercase; font-size: 11px; margin-top: 5px; pointer-events: auto;
+        transition: 0.2s;
+      }
+      .sidebar-undo-btn:hover { background: #374151; color: white; border-color: #6b7280; }
+
+      /* Inputs */
+      .input-group label { display: block; font-size: 12px; margin-bottom: 6px; color: #9ca3af; font-weight: 500; }
+      .input-group input, .input-group select, .input-group textarea { 
+          width: 100%; box-sizing: border-box; background: #0f1012; 
+          color: white; border: 1px solid #374151; padding: 8px; border-radius: 6px;
+      }
+      .input-group input:focus, .input-group select:focus { border-color: var(--primary); outline: none; }
+
+      .item-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+      .item-grid button { text-align: center; padding: 12px 5px; background: #27272a; border: 1px solid #3f3f46; font-size: 13px; color: #e5e7eb; }
+      .item-grid button:hover { background: #3f3f46; border-color: #52525b; }
+      .preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+      button.preset-btn { width: 100%; text-align: left; background: #27272a; border: 1px solid #3f3f46; padding: 10px; font-weight: 500; white-space: normal; font-size: 11px; }
+      button.preset-btn:hover { background: #3f3f46; }
+
+      /* Object List */
+      .object-list-item { 
+        padding: 8px; background: rgba(255,255,255,0.03); margin-bottom: 4px; border-radius: 4px; cursor: pointer; font-size: 12px; display: flex; justify-content: space-between; border: 1px solid transparent;
+      }
+      .object-list-item:hover { background: rgba(255,255,255,0.06); }
+      .object-list-item.selected { border-color: var(--primary); background: rgba(59, 130, 246, 0.1); }
+
+      /* Context Menu */
+      #context-menu {
+        position: absolute; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(10px);
+        background: #1f2937; padding: 8px 12px; border-radius: 100px;
+        display: flex; gap: 8px; align-items: center;
+        border: 1px solid #374151; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);
+        opacity: 0; pointer-events: none; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); z-index: 3000;
+      }
+      #context-menu.visible { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(0); }
+      #context-menu button { border-radius: 20px; padding: 6px 14px; background: #374151; border: none; font-size: 12px; }
+      #context-menu button:hover { background: #4b5563; }
+      #context-menu button.danger { background: var(--danger); color: white; }
+
+      /* On-Screen Controls */
+      #onscreen-controls {
+        display: none; position: absolute; bottom: 25px; right: 25px; width: 160px; height: 160px;
+        pointer-events: none; z-index: 2000; flex-direction: column; align-items: center; justify-content: center;
+      }
+      #onscreen-controls.visible { display: flex; }
+      .d-pad {
+        position: relative; width: 110px; height: 110px; background: rgba(17, 24, 39, 0.8);
+        border-radius: 50%; box-shadow: 0 10px 30px rgba(0,0,0,0.5); pointer-events: auto; 
+        border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(5px);
+      }
+      .ctrl-btn {
+        position: absolute; background: transparent; border: none; color: white; font-size: 18px; cursor: pointer;
+        display: flex; align-items: center; justify-content: center; opacity: 0.7; transition: 0.1s;
+      }
+      .ctrl-btn:hover { opacity: 1; color: var(--primary); }
+      .ctrl-btn:active { transform: scale(0.9); }
+      .btn-up { top: 5px; left: 50%; transform: translateX(-50%); width: 40px; height: 35px; }
+      .btn-down { bottom: 5px; left: 50%; transform: translateX(-50%); width: 40px; height: 35px; }
+      .btn-left { left: 5px; top: 50%; transform: translateY(-50%); width: 35px; height: 40px; }
+      .btn-right { right: 5px; top: 50%; transform: translateY(-50%); width: 35px; height: 40px; }
+      .btn-center { top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; background: rgba(255,255,255,0.1); border-radius: 50%; border: 1px solid rgba(255,255,255,0.1); }
+      .extra-controls { pointer-events: auto; display: flex; margin-top: 15px; }
+      .pill-group { display: flex; background: rgba(17, 24, 39, 0.8); border-radius: 100px; border: 1px solid rgba(255,255,255,0.1); overflow: hidden; }
+      .pill-btn { background: transparent; border: none; color: white; padding: 8px 16px; cursor: pointer; font-size: 16px; border-right: 1px solid rgba(255,255,255,0.1); }
+      .pill-btn:last-child { border-right: none; }
+      .pill-btn:hover { background: rgba(255,255,255,0.1); }
+
+      /* Modals */
+      #modal-overlay, #settings-overlay {
+        position: absolute; inset: 0; background: rgba(0,0,0,0.75); z-index: 3000;
+        display: none; align-items: center; justify-content: center; pointer-events: auto;
+        backdrop-filter: blur(5px);
+      }
+      #modal-overlay.active, #settings-overlay.active { display: flex; animation: fadeIn 0.3s ease; }
+      .modal-box {
+        background: #1f2937; width: 480px; padding: 30px; border-radius: 16px;
+        border: 1px solid #374151; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        max-height: 80vh; overflow-y: auto;
+      }
+      .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; color: white; display: flex; justify-content: space-between; align-items: center; }
+      .setting-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #374151; padding-bottom: 12px; }
+      .setting-row label { color: #e5e7eb; font-weight: 500; }
+      
+      /* Switch */
+      .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+      .switch input { opacity: 0; width: 0; height: 0; }
+      .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #4b5563; transition: .3s; border-radius: 24px; }
+      .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+      input:checked + .slider { background-color: var(--primary); }
+      input:checked + .slider:before { transform: translateX(20px); }
+
+      /* Reports */
+      .report-item { background: rgba(255,255,255,0.03); padding: 15px; margin-bottom: 10px; border-radius: 8px; border-left: 4px solid #4b5563; }
+      .report-item.good { border-left-color: var(--success); background: rgba(16, 185, 129, 0.05); }
+      .report-item.warn { border-left-color: var(--warning); background: rgba(245, 158, 11, 0.05); }
+      .report-item.bad { border-left-color: var(--danger); background: rgba(239, 68, 68, 0.05); }
+
+      /* Loader - KORRIGIERT: Standardmäßig unsichtbar */
+      #loader { 
+        position: absolute; inset: 0; background: #0f1012; z-index: 9999; 
+        display: flex; flex-direction: column; align-items: center; justify-content: center; 
+        transition: opacity 0.5s; 
+        opacity: 0; pointer-events: none; /* WICHTIG: Klicks durchlassen wenn inaktiv */
+      }
+      #loader.active { 
+        opacity: 1; pointer-events: auto; /* Sperrt Klicks nur wenn aktiv */
+      }
+      .spinner { 
+        width: 40px; height: 40px; border: 3px solid #374151; 
+        border-top: 3px solid var(--primary); border-radius: 50%; 
+        animation: spin 0.8s linear infinite; margin-bottom: 20px; 
+      }
+
+      /* Notification */
+      #notification {
+        position: absolute; top: 80px; left: 50%; transform: translateX(-50%) translateY(-20px);
+        background: #1f2937; color: white; padding: 12px 24px; border-radius: 8px;
+        font-weight: 500; opacity: 0; pointer-events: none; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        z-index: 2000; box-shadow: 0 10px 25px rgba(0,0,0,0.5); border: 1px solid #374151; display: flex; align-items: center; gap: 10px;
+      }
+      #notification.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+      #notification::before { content: "ℹ"; display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; background: var(--primary); color: white; border-radius: 50%; font-size: 11px; font-weight: bold; }
+
+      /* === FILTERS & NEURODIVERSITÄT === */
+      
+      /* Basis-Filter via Klasse auf Body */
+      body.sim-blur canvas { filter: blur(4px) contrast(1.2); }
+      body.sim-severe canvas { filter: blur(8px) contrast(0.8) brightness(0.7); }
+      body.sim-blind canvas { filter: brightness(0); background: black; }
+      
+      /* NEUE Filter-Klassen (Erweitert) */
+      body.sim-cataract canvas { filter: blur(2px) contrast(0.7) brightness(1.1) sepia(0.2); } /* Milchig */
+      body.sim-photophobia canvas { filter: brightness(1.4) contrast(1.2) saturate(0.5); } /* Überbelichtet */
+      body.sim-cvi canvas { filter: contrast(0.6) saturate(0.8) blur(1px); } /* "Flaches" Bild */
+      body.sim-achromatopsia canvas { filter: grayscale(100%) contrast(1.2); } /* SW */
+      body.sim-glaucoma canvas { filter: blur(3px) brightness(0.9); } /* Trüb + Tunnel */
+      body.sim-nyctalopia canvas { filter: brightness(0.4) contrast(1.5) grayscale(0.8); } /* Nachtblindheit */
+
+      /* SVG-Filter Einbindung */
+      body.sim-protanopia canvas { filter: url(#filter-protanopia); }
+      body.sim-deuteranopia canvas { filter: url(#filter-deuteranopia); }
+      body.sim-tritanopia canvas { filter: url(#filter-tritanopia); }
+      body.sim-diplopia canvas { filter: url(#filter-diplopia); }
+      body.sim-metamorphopsia canvas { filter: url(#filter-metamorphopsia); } /* Verzerrt */
+
+      /* Container für Overlays */
+      #vision-overlay-container { 
+          position: absolute; inset: 0; pointer-events: none; z-index: 5; display: none; 
+      }
+      
+      /* Overlay-Sichtbarkeit steuern */
+      body.sim-tunnel #vision-overlay-container,
+      body.sim-noise #vision-overlay-container,
+      body.sim-spot #vision-overlay-container,
+      body.sim-scotoma #vision-overlay-container,
+      body.sim-hemi #vision-overlay-container,
+      body.sim-hemi-l #vision-overlay-container,
+      body.sim-quadrant #vision-overlay-container,
+      body.sim-ring #vision-overlay-container,
+      body.sim-retina #vision-overlay-container,
+      body.sim-glaucoma #vision-overlay-container,
+      body.sim-crowding #vision-overlay-container { display: block; }
+
+      /* --- OVERLAY DEFINITIONEN --- */
+
+      /* 1. Tunnelblick (Röhre) */
+      #vision-tunnel {
+        position: absolute; inset: 0; display: none;
+        background: radial-gradient(circle at 50% 50%, transparent 15%, rgba(0,0,0,0.95) 30%, black 65%);
+      }
+      body.sim-tunnel #vision-tunnel, body.sim-glaucoma #vision-tunnel { display: block; }
+
+      /* 2. Rauschen */
+      #vision-noise {
+        position: absolute; top: -100%; left: -100%; width: 300%; height: 300%;
+        opacity: 0.15; pointer-events: none; display: none;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      }
+      body.sim-noise #vision-noise { display: block; animation: noiseAnim 0.2s steps(4) infinite; }
+
+      /* 3. Makula (Zentral) */
+      #vision-spot {
+        position: absolute; inset: 0; display: none;
+        background: radial-gradient(circle at 50% 50%, rgba(0,0,0,0.98) 5%, rgba(0,0,0,0.8) 15%, transparent 45%);
+      }
+      body.sim-spot #vision-spot { display: block; }
+
+      /* 4. Parazentrales Skotom (Inseln neben Zentrum) */
+      #vision-scotoma {
+        position: absolute; inset: 0; display: none;
+        background: radial-gradient(circle at 40% 45%, rgba(0,0,0,0.9) 2%, transparent 8%),
+                    radial-gradient(circle at 60% 55%, rgba(0,0,0,0.9) 3%, transparent 10%);
+      }
+      body.sim-scotoma #vision-scotoma { display: block; }
+
+      /* 5. Hemianopsie RECHTS */
+      #vision-hemi {
+        position: absolute; inset: 0; display: none;
+        background: linear-gradient(to right, transparent 50%, black 50.5%);
+      }
+      body.sim-hemi #vision-hemi { display: block; }
+
+      /* 6. Hemianopsie LINKS */
+      #vision-hemi-l {
+        position: absolute; inset: 0; display: none;
+        background: linear-gradient(to left, transparent 50%, black 50.5%);
+      }
+      body.sim-hemi-l #vision-hemi-l { display: block; }
+
+      /* 7. Quadrantenanopsie (Oben Rechts) */
+      #vision-quadrant {
+        position: absolute; inset: 0; display: none;
+        background: linear-gradient(to right, transparent 50%, black 50.5%),
+                    linear-gradient(to bottom, transparent 50%, black 50.5%);
+        background-blend-mode: multiply; /* Nur das Viertel wird schwarz, wo beide sich treffen? Nein, das wäre falsch. */
+        /* Einfacheres CSS für Quadrant oben rechts: Clip-Path oder Gradient-Trick */
+        background: conic-gradient(from 0deg at 50% 50%, black 0deg 90deg, transparent 90deg 360deg);
+      }
+      body.sim-quadrant #vision-quadrant { display: block; }
+
+      /* 8. Ringskotom */
+      #vision-ring {
+        position: absolute; inset: 0; display: none;
+        background: radial-gradient(circle at 50% 50%, transparent 20%, black 30%, black 50%, transparent 60%);
+      }
+      body.sim-ring #vision-ring { display: block; }
+
+      /* 9. Retinopathie (Flecken) */
+      #vision-retina {
+        position: absolute; inset: 0; display: none;
+        background: 
+            radial-gradient(circle at 20% 30%, black 2%, transparent 10%),
+            radial-gradient(circle at 80% 20%, black 3%, transparent 12%),
+            radial-gradient(circle at 40% 70%, black 4%, transparent 15%),
+            radial-gradient(circle at 70% 80%, black 2%, transparent 10%),
+            radial-gradient(circle at 50% 50%, transparent 40%, rgba(0,0,0,0.4) 100%);
+      }
+      body.sim-retina #vision-retina { display: block; }
+      
+      /* 10. Crowding (Vignette Randunschärfe simulieren) */
+      #vision-crowding {
+         position: absolute; inset: 0; display: none;
+         box-shadow: inset 0 0 150px 50px rgba(0,0,0,0.7);
+      }
+      body.sim-crowding #vision-crowding { display: block; }
+
+      @keyframes noiseAnim {
+        0% { transform: translate(0,0); } 10% { transform: translate(-5%,-5%); }
+        20% { transform: translate(-10%,5%); } 30% { transform: translate(5%,-10%); }
+        40% { transform: translate(-5%,15%); } 50% { transform: translate(-10%,5%); }
+        60% { transform: translate(15%,0); } 70% { transform: translate(0,10%); }
+        80% { transform: translate(-15%,0); } 90% { transform: translate(10%,5%); }
+        100% { transform: translate(5%,0); }
+      }
+
+      .vision-hint { font-size: 11px; color: var(--warning); margin-bottom: 8px; font-style: italic; background: rgba(245, 158, 11, 0.1); padding: 8px; border-radius: 4px; border: 1px solid rgba(245, 158, 11, 0.2); }
+      
+      /* NEU: Style für Lehrkraft-Tipps im Glossar */
+      #glossary-tip {
+          margin-top: 10px;
+          padding: 8px 10px;
+          background: rgba(59, 130, 246, 0.1); /* Leichtes Blau */
+          border-left: 3px solid var(--primary);
+          border-radius: 0 4px 4px 0;
+          font-size: 11px;
+          color: #dbeafe; /* Helles Blau-Weiß */
+          display: none; /* Standardmäßig aus */
+      }
+      #glossary-tip strong { display: block; color: var(--primary); margin-bottom: 2px; text-transform: uppercase; font-size: 9px; letter-spacing: 0.5px; }
+      .tutorial-highlight { position: relative; z-index: 9001; box-shadow: 0 0 0 4px var(--primary), 0 0 20px var(--primary-glow) !important; border-color: var(--primary) !important; }
+
+      /* === HOCHKONTRAST MODUS FIX === */
+      body.high-contrast {
+        --bg-dark: #000000;
+        --bg-panel: #000000;
+        --border: #ffffff;
+        --primary: #ffff00; /* Gelb für maximalen Kontrast */
+        --text: #ffffff;
+        --text-light: #ffffff;
+        --btn-bg: #000000;
+      }
+
+      body.high-contrast .panel,
+      body.high-contrast .top-bar,
+      body.high-contrast .sidebar-action-btn, 
+      body.high-contrast .sidebar-undo-btn,
+      body.high-contrast .modal-box,
+      body.high-contrast .home-container,
+      body.high-contrast select,
+      body.high-contrast input,
+      body.high-contrast textarea {
+        background: #000000 !important;
+        border: 2px solid #ffffff !important;
+        color: #ffffff !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+      }
+
+      body.high-contrast button {
+        border: 2px solid #ffffff !important;
+        background: #000000 !important;
+        color: #ffffff !important;
+        font-weight: bold;
+      }
+
+      body.high-contrast button.primary,
+      body.high-contrast .big-btn.highlight {
+        background: #ffff00 !important;
+        color: #000000 !important;
+        border-color: #ffff00 !important;
+      }
+
+      body.high-contrast button:hover,
+      body.high-contrast select:hover {
+        background: #333 !important;
+        text-decoration: underline;
+      }
+      
+      body.high-contrast label,
+      body.high-contrast h1, body.high-contrast h2, 
+      body.high-contrast h3, body.high-contrast h4 {
+        color: #ffffff !important;
+      }
+
+      body.high-contrast .home-title-large {
+        background: none;
+        -webkit-text-fill-color: #ffff00;
+        color: #ffff00;
+      }
+
+      /* Canvas Kontrast verstärken */
+      body.high-contrast canvas {
+        filter: contrast(1.5) grayscale(1);
+      }
+
+      /* === MODERN PWA MODAL & BUTTON === */
+      
+      /* Der neue, breite Download Button im Glas-Look */
+      .download-cta-btn {
+          width: 100%;
+          
+          /* GLASSMORPHISM STYLING */
+          background: rgba(59, 130, 246, 0.15); /* Sehr transparentes Blau */
+          backdrop-filter: blur(12px);          /* Der "Milchglas"-Effekt */
+          -webkit-backdrop-filter: blur(12px);  /* Für Safari */
+          border: 1px solid rgba(59, 130, 246, 0.3); /* Feiner, leuchtender Rahmen */
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); /* Weicher Schatten für Tiefe */
+          color: white;
+          
+          /* LAYOUT & GRÖSSE (unverändert) */
+          padding: 16px 20px;
+          border-radius: 12px;
+          font-size: 14px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          
+          /* INTERAKTION */
+          cursor: pointer;
+          transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); /* Weichere Animation */
+          pointer-events: auto !important;
+          margin-bottom: 25px;
+      }
+
+      .download-cta-btn:hover {
+          /* Beim Hover wird das Glas etwas "dichter" und leuchtet mehr */
+          background: rgba(59, 130, 246, 0.3); 
+          border-color: var(--primary); /* Rahmen wird Vollfarbe */
+          transform: translateY(-3px);  /* Schwebt etwas höher */
+          box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3); /* Starker blauer Glow */
+      }
+
+      /* Das Hintergrund-Overlay */
+      #pwa-modal {
+        position: absolute; inset: 0; 
+        background: rgba(0,0,0,0.7);
+        backdrop-filter: blur(8px);
+        z-index: 10000;
+        display: none; align-items: center; justify-content: center; pointer-events: auto;
+      }
+      #pwa-modal.active { display: flex; animation: fadeIn 0.3s ease; }
+
+      /* Die Box selbst */
+      .pwa-glass-box {
+          width: 750px; max-width: 95vw;
+          background: #18181b; 
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 20px;
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9);
+          overflow: hidden;
+          display: flex; flex-direction: column;
+      }
+      
+      .pwa-header {
+          padding: 20px 30px;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+          display: flex; justify-content: space-between; align-items: center;
+          background: rgba(255,255,255,0.02);
+      }
+      .pwa-header h2 { margin: 0; font-size: 18px; color: white; display: flex; align-items: center; gap: 10px; }
+      
+      .pwa-content { padding: 30px; color: #d1d5db; font-size: 14px; line-height: 1.6; }
+
+      /* Grid für die Plattform-Infos (Fundort & Deinstallation) */
+      .os-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+      .os-card { 
+          background: rgba(255,255,255,0.03); border-radius: 8px; padding: 15px; 
+          border: 1px solid rgba(255,255,255,0.05);
+      }
+      .os-title { color: white; font-weight: bold; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; font-size: 13px; }
+      .os-desc { font-size: 12px; color: #9ca3af; margin: 0; line-height: 1.5; }
+      .os-label { color: var(--primary); font-size: 10px; text-transform: uppercase; font-weight: bold; display: block; margin-top: 8px; margin-bottom: 2px;}
+
+      /* Maus Warnung */
+      .mouse-warning {
+          background: rgba(245, 158, 11, 0.1); 
+          border: 1px solid rgba(245, 158, 11, 0.3);
+          padding: 15px; margin-bottom: 25px; border-radius: 8px;
+          display: flex; gap: 15px; align-items: center;
+      }
+
+    </style>
+  </head>
+  <body>
+    <script>
+    // NOTFALL-FIX: Service Worker & Cache löschen
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+            for(let registration of registrations) {
+                registration.unregister();
+                console.log("Service Worker entfernt!");
+            } 
+        });
+        caches.keys().then(names => {
+            for (let name of names) caches.delete(name);
+            console.log("Caches geleert!");
+        });
+    }
+    </script>
+
+    <!-- Lade-Animation -->
+    <div id="loader"><div class="spinner"></div><div id="loading-text" style="color:#9ca3af; font-size:12px; letter-spacing:1px; text-transform:uppercase;">System wird geladen</div></div>
+    <div id="notification"></div>
+    <input type="file" id="file-input" style="display:none" accept=".elmeks,.json" onchange="app.loadFromFile(this)">
+    
+    <!-- Modal -->
+    <div id="modal-overlay">
+      <div class="modal-box">
+        <div class="modal-title" id="modal-title">Titel</div>
+        <div class="modal-content" id="modal-content">Inhalt</div>
+      </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-overlay">
+      <div class="modal-box">
+        <div class="modal-title">
+          <span>Einstellungen</span>
+          <button style="background:none; border:none; color:white; font-size:1.5em; cursor:pointer; padding:0;" onclick="app.toggleSettings()">×</button>
+        </div>
+        <div class="setting-row">
+          <label>On-Screen Steuerung</label>
+          <label class="switch"><input type="checkbox" id="set-controls" onchange="app.updateSettings()" checked><span class="slider"></span></label>
+        </div>
+        <div class="setting-row">
+          <label>Maus-Empfindlichkeit</label>
+          <input type="range" id="set-rotate-speed" min="0.1" max="2.0" step="0.1" value="1.0" onchange="app.updateSettings()" style="width:100px;">
+        </div>
+        <div class="setting-row">
+          <label>Reduzierte Bewegung</label>
+          <label class="switch"><input type="checkbox" id="set-reduced-motion" onchange="app.updateSettings()"><span class="slider"></span></label>
+        </div>
+        <div class="setting-row">
+          <label>Hochkontrast-Modus</label>
+          <label class="switch"><input type="checkbox" id="set-high-contrast" onchange="app.updateSettings()"><span class="slider"></span></label>
+        </div>
+        <div class="setting-row">
+            <label>Schriftgröße</label>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <button onclick="app.setFontScale(-0.1)" style="padding:4px 8px; border:1px solid #4b5563;">A-</button>
+              <span id="font-scale-val" style="font-size:12px; color:#fff; width:40px; text-align:center;">100%</span>
+              <button onclick="app.setFontScale(0.1)" style="padding:4px 8px; border:1px solid #4b5563;">A+</button>
+            </div>
+        </div>
+        <div class="setting-row" style="border-bottom:none;">
+          <label>Farbfilter</label>
+          <select id="set-color-filter" onchange="app.updateSettings()" style="width:auto; min-width:120px;">
+            <option value="none">Keiner</option>
+            <option value="grayscale">Graustufen</option>
+            <option value="sepia">Sepia</option>
+            <option value="invert">Invertiert</option>
+          </select>
+        </div>
+        <button class="primary" style="width:100%; margin-top:10px; padding:12px;" onclick="app.toggleSettings()">Einstellungen schließen</button>
+      </div>
+    </div>
+
+    <div id="pwa-modal">
+      <div class="pwa-glass-box">
+        <div class="pwa-header">
+            <h2>
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                App & Offline-Nutzung
+            </h2>
+            <button onclick="document.getElementById('pwa-modal').classList.remove('active')" style="background:none; border:none; color:white; font-size:24px; cursor:pointer; opacity:0.7;">×</button>
+        </div>
+        
+        <div class="pwa-content">
+            
+            <div class="mouse-warning">
+                <div style="font-size:24px;">🖱️</div>
+                <div>
+                    <strong style="color: #f59e0b; display:block; margin-bottom:2px;">Maus & Tastatur empfohlen</strong>
+                    <span style="font-size:13px; color:#d1d5db;">Diese Anwendung ist für Desktop-PCs optimiert. Die Bedienung per Touchscreen ist möglich, aber für präzises Planen eingeschränkt.</span>
+                </div>
+            </div>
+
+            <div id="pwa-status-area" style="text-align:center; margin-bottom:30px;">
+                <div id="pwa-ready-msg" style="display:none;">
+                    <button id="pwa-install-btn-modal" class="big-btn highlight" style="justify-content: center; width: 100%; max-width: 400px; margin: 0 auto; height: 50px;">
+                        <span>App jetzt installieren</span>
+                    </button>
+                    <p style="font-size:11px; margin-top:10px; color:#9ca3af;">Kostenlos für Windows, macOS, Android & iOS</p>
+                </div>
+                
+                <div id="pwa-fallback-msg">
+                    <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:8px; display:inline-block;">
+                        <p style="margin:0; font-weight:bold; color:white;">Ihr Browser unterstützt keine direkte Installation.</p>
+                        <p style="margin:5px 0 0 0; font-size:12px; color:#9ca3af;">Bitte nutzen Sie Chrome oder Edge, oder fügen Sie die Seite manuell zum Homescreen hinzu.</p>
+                    </div>
+                </div>
+            </div>
+
+            <h4 style="color:white; margin:0 0 10px 0; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px;">Verwaltung & Hilfe</h4>
+            
+            <div class="os-grid">
+                <div class="os-card">
+                    <span class="os-title">🪟 Windows</span>
+                    <span class="os-label">Wo finde ich die App?</span>
+                    <p class="os-desc">Auf dem Desktop und im Startmenü (unter "E").</p>
+                    <span class="os-label">Deinstallation</span>
+                    <p class="os-desc">Öffnen Sie die App &rarr; Oben im Fensterbalken auf den Pfeil oder "..." klicken &rarr; "ELMeKS deinstallieren".</p>
+                </div>
+
+                <div class="os-card">
+                    <span class="os-title">🤖 Android</span>
+                    <span class="os-label">Wo finde ich die App?</span>
+                    <p class="os-desc">Als App-Icon auf Ihrem Startbildschirm.</p>
+                    <span class="os-label">Deinstallation</span>
+                    <p class="os-desc">Lange auf das App-Icon drücken &rarr; "Deinstallieren" oder "Entfernen" wählen.</p>
+                </div>
+
+                <div class="os-card">
+                    <span class="os-title">🍎 macOS</span>
+                    <span class="os-label">Wo finde ich die App?</span>
+                    <p class="os-desc">Im Launchpad oder im Ordner "Chrome Apps".</p>
+                    <span class="os-label">Deinstallation</span>
+                    <p class="os-desc">App in den Papierkorb ziehen oder im Finder löschen.</p>
+                </div>
+
+                <div class="os-card">
+                    <span class="os-title">📱 iOS (iPad/iPhone)</span>
+                    <span class="os-label">Wo finde ich die App?</span>
+                    <p class="os-desc">Auf dem Home-Bildschirm.</p>
+                    <span class="os-label">Deinstallation</span>
+                    <p class="os-desc">Lange auf das Icon drücken &rarr; "App entfernen".</p>
+                </div>
+            </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- === PROFESSIONELLER HOMESCREEN (REDESIGN 16:9) === -->
+    <div id="homescreen">
+      <!-- Hintergrund Animation & Raster -->
+      <canvas id="bg-canvas"></canvas>
+      <div class="tech-grid-overlay"></div>
+
+      <div class="home-container">
+        <!-- Linke Seite: Branding & Aktionen -->
+        <div class="home-left stagger-1">
+            <div style="margin-bottom: 50px;">
+                <div class="home-title-large">ELMeKS.digital</div>
+                <div class="home-subtitle">Die professionelle Lösung für inklusive Raumplanung <br>und Barrierefreiheits-Analyse in Bildungseinrichtungen.</div>
+            </div>
+            
+            <div class="action-buttons stagger-2">
+                <button class="big-btn highlight" onclick="app.startSession()">
+                    <span>Neuen Raum planen</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </button>
+                <button class="big-btn ghost" onclick="document.getElementById('file-input').click()">
+                    <span>Plan laden</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                </button>
+                <button class="big-btn ghost" onclick="app.startTutorial()">
+                    <span>Tutorial starten</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Rechte Seite: Features & Settings -->
+        <div class="home-right stagger-3" style="position: relative;">
+            
+            <div style="position: relative; z-index: 500;">
+                <button onclick="document.getElementById('pwa-modal').classList.add('active')" class="download-cta-btn">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    <span>Anwendung herunterladen</span>
+                </button>
+            </div>
+            
+            <div class="feature-box">
+                <div class="section-label">Steuerung & Shortcuts</div>
+                <ul class="feature-list">
+                    <li class="feature-item">
+                        <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg></div>
+                        <div>
+                            <strong>Objekt bewegen</strong>
+                            Linke Maustaste gedrückt halten & ziehen.
+                        </div>
+                    </li>
+                    <li class="feature-item">
+                        <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></div>
+                        <div>
+                            <strong>Kamera / Objekt drehen</strong>
+                            Rechte Maustaste (Kamera) oder Taste <span class="key-badge">R</span> (Objekt).
+                        </div>
+                    </li>
+                    <li class="feature-item">
+                        <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></div>
+                        <div>
+                            <strong>Löschen</strong>
+                            Objekt wählen und <span class="key-badge">Entf</span> drücken.
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="feature-box stagger-4">
+                <div class="section-label">Barrierefreiheit</div>
+                <div class="settings-mini">
+                    <div class="mini-row" style="margin-bottom:0;">
+                        <span>Hochkontrast-Modus</span>
+                        <label class="switch"><input type="checkbox" id="start-high-contrast" onchange="app.updateSettings()"><span class="slider"></span></label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="feedback-area">
+                Haben Sie Ideen oder Wünsche? <br>
+                <a href="mailto:dominik.toepper@tu-dresden.de" class="feedback-link">dominik.toepper@tu-dresden.de</a>
+            </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- UI LAYER -->
+    <div id="ui-layer" style="display:none;">
+      <!-- Top Navigation -->
+      <div class="top-bar">
+        <!-- SVG Home Icon -->
+        <button onclick="app.confirmGoHome()" title="Hauptmenü" class="icon-btn" style="margin-right:15px;">
+           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </button>
+
+        <div class="brand">ELMeKS.digital</div>
+        <select id="room-select">
+          <option value="raummodell_leer.glb" selected>LLR (50m²)</option>
+          <option value="50qm_möbliertglb.glb">LLR Möbliert (Standard)</option>
+          <option value="leer_70qm.glb">Großer Raum (70m²)</option>
+          <option value="leer_30qm.glb">Kleiner Raum (30m²)</option>
+        </select>
+        
+        <div class="separator"></div>
+        <button onclick="app.savePlan()">Speichern</button>
+        <button onclick="document.getElementById('file-input').click()">Laden</button>
+        <button onclick="app.exportPDF()">PDF erstellen</button>
+        
+        <div class="separator"></div>
+        <span style="font-size:0.9em; color:#6b7280; font-weight:600; letter-spacing:0.5px;">ANSICHT:</span>
+        <button onclick="app.setCamera('top')">Zurücksetzen</button>
+
+        <div class="spacer"></div>
+
+        <button onclick="app.toggleSettings()" style="margin-left: 10px; padding: 6px 10px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+
+        <div class="stats" style="margin-left:15px; display:flex; align-items:center; gap:8px;">
+          <span style="font-size:11px; color:#6b7280; text-transform:uppercase; font-weight:700;">Plätze</span>
+          <span class="badge" id="seat-count" style="background:#374151; color:white; padding:2px 8px; border-radius:4px; font-weight:700;">0</span>
+        </div>
+      </div>
+
+      <!-- Left Sidebar -->
+      <div class="sidebar">
+        <!-- Assistent -->
+        <div class="panel">
+          <div class="panel-header" onclick="togglePanel(this)">Planungs-Assistent</div>
+          <div class="panel-content">
+            <div class="input-group">
+              <label>Szenario</label>
+              <select id="wizard-scenario">
+                <option value="lecture">Plenum (Reihen)</option>
+                <option value="group">Gruppenarbeit</option>
+                <option value="circle">Stuhlkreis</option>
+                <option value="exam">Klausur</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label>Anzahl</label>
+              <input type="number" id="wizard-count" value="20" min="1" max="60">
+            </div>
+            <button class="primary full-width" style="width:100%; margin-top:5px;" onclick="app.runWizard()">Generieren</button>
+          </div>
+        </div>
+
+        <!-- Einzelmöbel -->
+        <div class="panel collapsed">
+          <div class="panel-header" onclick="togglePanel(this)">Einzelmöbel & Ausstattung</div>
+          <div class="panel-content">
+            <label style="color:#6b7280; font-size:10px; font-weight:700; display:block; margin-bottom:8px; letter-spacing:0.5px;">SITZGELEGENHEITEN & TISCHE</label>
+            <div class="item-grid">
+              <button onclick="app.addFurniture('row_combo')">Tisch+Stuhl</button>
+              <button onclick="app.addFurniture('chair')">Stuhl</button>
+              <button onclick="app.addFurniture('tano')">Tano-Tisch</button>
+              <button onclick="app.addFurniture('triangle')">Dreieck</button>
+              <button onclick="app.addFurniture('table_square')">Quadrat-Tisch</button>
+              <button onclick="app.addFurniture('table_double')">2er Tisch</button>
+              <button onclick="app.addFurniture('sofa')">Sofa</button>
+            </div>
+
+            <label style="color:#6b7280; font-size:10px; font-weight:700; display:block; margin-bottom:8px; margin-top:15px; letter-spacing:0.5px;">MÖBEL & TECHNIK</label>
+            <div class="item-grid">
+              <button onclick="app.addFurniture('board')">Tafel</button>
+              <button onclick="app.addFurniture('teacher')">Pult</button>
+              <button onclick="app.addFurniture('cupboard')">Regal (Rund)</button>
+              <button onclick="app.addFurniture('cabinet_short')">Schrank (Kurz)</button>
+              <button onclick="app.addFurniture('cabinet_long')">Schrank (Lang)</button>
+              <button onclick="app.addFurniture('laptop')">Laptop</button>
+            </div>
+            
+            <label style="color:#6b7280; font-size:10px; font-weight:700; display:block; margin-bottom:8px; margin-top:15px; letter-spacing:0.5px;">AKUSTIK & BARRIEREFREIHEIT</label>
+            <div class="item-grid">
+              <button onclick="app.addFurniture('carpet_proc')">Teppich</button>
+              <button onclick="app.addFurniture('partition_proc')">Trennwand</button>
+              <button onclick="app.addFurniture('absorber_proc')">Wand-Absorber</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Manuelle Konstellationen -->
+        <div class="panel collapsed">
+          <div class="panel-header" onclick="togglePanel(this)">Konstellationen</div>
+          <div class="panel-content">
+            <div class="preset-grid">
+              <button class="preset-btn" onclick="app.addFurniture('k1')">2er Ecktisch</button>
+              <button class="preset-btn" onclick="app.addFurniture('k2')">2er Vis-a-Vis</button>
+              <button class="preset-btn" onclick="app.addFurniture('k5')">4er Ecktisch</button>
+              <button class="preset-btn" onclick="app.addFurniture('k6')">6er Gruppe</button>
+              <button class="preset-btn" onclick="app.addFurniture('k4')">8er Kreis</button>
+              <button class="preset-btn" onclick="app.addFurniture('k3')">8er Gruppe</button>
+              <button class="preset-btn" onclick="app.addFurniture('k8')">9er U-Form</button>
+              <button class="preset-btn" onclick="app.addFurniture('k7')">11er U-Form</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Objektliste -->
+        <div class="panel collapsed">
+          <div class="panel-header" onclick="togglePanel(this)">Objektliste</div>
+          <div class="panel-content">
+            <div id="selection-details" style="display:none; border-bottom:1px solid #374151; margin-bottom:10px; padding-bottom:10px;">
+                <label style="color:var(--primary); font-weight:bold; font-size:12px; margin-bottom:5px; display:block;">Auswahl bearbeiten</label>
+                <div class="input-group" style="margin-top:5px;">
+                    <label>Anmerkung</label>
+                    <textarea id="obj-annotation" rows="2" oninput="app.updateAnnotation(this.value)" style="resize:vertical;"></textarea>
+                </div>
+            </div>
+            <div id="object-list-container">
+               <small style="color:#6b7280;">Keine Objekte platziert.</small>
+            </div>
+          </div>
+        </div>
+
+        <button class="sidebar-action-btn" onclick="app.clearRoom()">Raum leeren</button>
+        <button class="sidebar-undo-btn" onclick="app.undo()">⟲ Schritt zurück</button>
+      </div>
+
+      <!-- Right Sidebar -->
+      <div class="sidebar-right">
+        <!-- Panel 1: Avatar & Simulation -->
+        <div class="panel">
+          <div class="panel-header" onclick="togglePanel(this)">Visuelle Simulation</div>
+          <div class="panel-content">
+            
+            <!-- 1. Avatar Setzen -->
+            <div class="input-group">
+                <button id="btn-spawn-avatar" class="primary" style="width:100%">Avatar setzen</button>
+            </div>
+            
+            <!-- 2. Steuerungs-Optionen -->
+            <div id="avatar-controls-group" style="display:none; margin-top:15px; border-top:1px solid #374151; padding-top:15px;">
+                <label style="color:#6b7280; font-size:10px; font-weight:700; margin-bottom:8px; display:block; letter-spacing:0.5px;">SIMULATIONS-MODUS</label>
+                
+                <div class="item-grid">
+                    <button id="btn-toggle-view">Ich-Perspektive</button>
+                    <button id="btn-toggle-analysis" onclick="app.toggleVisionAnalysis()">Draufsicht</button>
+                </div>
+
+                <!-- Exit Button -->
+                <button id="btn-exit-simulation" class="danger solid" style="width:100%; margin-top:5px; display:none;">
+                    Ansicht verlassen
+                </button>
+
+                <!-- Settings für Sehschwäche -->
+                <div id="vision-settings-panel" style="display:none; margin-top:15px; background:rgba(0,0,0,0.2); padding:0; border-radius:8px; border:1px solid #374151; overflow:hidden;">
+                    
+                    <div style="padding:12px; border-bottom:1px solid rgba(255,255,255,0.05);">
+                        <label style="color:var(--primary); font-size:11px; text-transform:uppercase; font-weight:700; display:block; margin-bottom:6px;">Visus (Sehschärfe)</label>
+                        <select id="vision-select-right" style="width:100%; font-size:13px; padding:8px;" onchange="app.setVisionSeverity(this.value)">
+                            <option value="normal" selected>Normal (100%)</option>
+                            <option value="low">Sehbehindert (&lt; 30%)</option>
+                            <option value="severe">Hochgradig (&lt; 5%)</option>
+                            <option value="blind">Blindheit (Voll)</option>
+                        </select>
+                    </div>
+
+                    <div id="neuro-section" style="background:rgba(0,0,0,0.1); padding:12px;">
+                        <label style="color:#6b7280; font-size:10px; font-weight:700; display:block; margin-bottom:8px; letter-spacing:0.5px;">SIMULATION WÄHLEN</label>
+                        
+                        <select id="sim-select" style="width:100%; font-size:13px; padding:8px; margin-bottom:10px;" onchange="app.setSimulationMode(this.value)">
+                            <option value="none" selected>-- Keine Simulation --</option>
+                            
+                            <optgroup label="Gesichtsfeld (Strukturell)">
+                                <option value="tunnel">Tunnelblick (RP)</option>
+                                <option value="spot">Makula (Zentral)</option>
+                                <option value="scotoma">Parazentralskotom</option>
+                                <option value="hemi">Hemianopsie (Rechts)</option>
+                                <option value="hemi-l">Hemianopsie (Links)</option>
+                                <option value="quadrant">Quadrantenanopsie</option>
+                                <option value="ring">Ringskotom</option>
+                            </optgroup>
+                            
+                            <optgroup label="Licht & Trübung">
+                                <option value="cataract">Katarakt (Grauer Star)</option>
+                                <option value="glaucoma">Glaukom (Grüner Star)</option>
+                                <option value="photophobia">Photophobie (Blendung)</option>
+                                <option value="nyctalopia">Nachtblindheit</option>
+                                <option value="retina">Diabetische Retinopathie</option>
+                            </optgroup>
+
+                            <optgroup label="Neurologische Verarbeitung">
+                                <option value="cvi">CVI / Agnosie</option>
+                                <option value="crowding">Crowding / Neglect</option>
+                                <option value="metamorphopsia">Metamorphopsie (Verzerrt)</option>
+                                <option value="diplopia">Diplopie (Doppelbilder)</option>
+                                <option value="noise">Visuelles Rauschen</option>
+                            </optgroup>
+
+                            <optgroup label="Farbwahrnehmung">
+                                <option value="achromatopsia">Achromatopsie (SW)</option>
+                                <option value="protanopia">Rot-Blindheit</option>
+                                <option value="deuteranopia">Grün-Blindheit</option>
+                                <option value="tritanopia">Blau-Blindheit</option>
+                            </optgroup>
+                        </select>
+
+                        <div id="vision-glossary" style="background:#1f2937; border:1px solid #374151; border-radius:6px; padding:12px; margin-top:5px;">
+                            <div id="glossary-title" style="color:var(--primary); font-size:12px; font-weight:700; margin-bottom:6px;">Simulation inaktiv</div>
+                            <div id="glossary-text" style="color:#d1d5db; font-size:11px; line-height:1.5;">
+                                Wählen Sie oben eine Simulation aus, um Details zu sehen.
+                            </div>
+                            <div id="glossary-tip">
+                                <strong>Pädagogischer Hinweis:</strong>
+                                <span id="glossary-tip-text"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="vision-disabled-hint" class="vision-hint" style="margin-top:10px;">
+               Setzen Sie einen Avatar, um Sichtfeld-Analysen oder die Ich-Perspektive zu starten.
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Panel 2: Check -->
+        <div class="panel collapsed">
+          <div class="panel-header" onclick="togglePanel(this)">Umgebungs-Check</div>
+          <div class="panel-content">
+            <div class="input-group">
+                <label>Analyse-Tools</label>
+                <button onclick="app.checkAccessibility()" style="width:100%; margin-bottom:5px;">Barrierefreiheit prüfen</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Context Menu -->
+      <div id="context-menu">
+        <button onclick="app.rotateSelection(1)">Drehen L</button>
+        <button onclick="app.rotateSelection(-1)">Drehen R</button>
+        <div style="width:1px; height:15px; background:#4b5563;"></div>
+        <button class="danger" onclick="app.deleteSelection()">Löschen</button>
+      </div>
+
+      <!-- On-Screen Controls -->
+      <div id="onscreen-controls">
+          <div class="d-pad">
+              <button class="ctrl-btn btn-up" onclick="app.moveCamera(0, 1)">▲</button>
+              <button class="ctrl-btn btn-left" onclick="app.moveCamera(1, 0)">◀</button>
+              <button class="ctrl-btn btn-center" onclick="app.setCamera('top')">●</button>
+              <button class="ctrl-btn btn-right" onclick="app.moveCamera(-1, 0)">▶</button>
+              <button class="ctrl-btn btn-down" onclick="app.moveCamera(0, -1)">▼</button>
+          </div>
+          <div class="extra-controls">
+              <div class="pill-group">
+                  <button class="pill-btn" onclick="app.zoomCamera(-1)">+</button>
+                  <button class="pill-btn" onclick="app.zoomCamera(1)">−</button>
+              </div>
+          </div>
+      </div>
+    </div>
+    
+    <!-- Overlay für Seh-Simulation -->
+    <div id="vision-overlay-container">
+        <div id="vision-tunnel"></div>
+        <div id="vision-noise"></div>
+        <div id="vision-spot"></div>
+        <div id="vision-scotoma"></div>
+        <div id="vision-hemi"></div>
+        <div id="vision-hemi-l"></div>
+        <div id="vision-quadrant"></div>
+        <div id="vision-ring"></div>
+        <div id="vision-retina"></div>
+        <div id="vision-crowding"></div>
+    </div>
+    <script type="module" src="script.js"></script>
+
+    <!-- HINTERGRUND SCRIPT -->
+    <script>
+      (function() {
+          const canvas = document.getElementById('bg-canvas');
+          const ctx = canvas.getContext('2d');
+          
+          let width, height;
+          let particles = [];
+          
+          const mouse = { x: null, y: null };
+          
+          // Konfiguration: Mehr Partikel, stärkere Verbindung
+          const particleCount = 55; // Etwas mehr Partikel
+          const connectionDist = 150;
+          const mouseDist = 200;
+          
+          function resize() {
+              width = window.innerWidth;
+              height = window.innerHeight;
+              canvas.width = width;
+              canvas.height = height;
+          }
+          window.addEventListener('resize', resize);
+          resize();
+          
+          window.addEventListener('mousemove', (e) => {
+              mouse.x = e.x;
+              mouse.y = e.y;
+          });
+          
+          window.addEventListener('mouseleave', () => {
+              mouse.x = null;
+              mouse.y = null;
+          });
+
+          class Particle {
+              constructor() {
+                  this.x = Math.random() * width;
+                  this.y = Math.random() * height;
+                  this.vx = (Math.random() - 0.5) * 0.4;
+                  this.vy = (Math.random() - 0.5) * 0.4;
+                  this.size = Math.random() * 2.0 + 1.0; // Größere Partikel
+              }
+              
+              update() {
+                  this.x += this.vx;
+                  this.y += this.vy;
+                  
+                  if (this.x < 0) this.x = width;
+                  if (this.x > width) this.x = 0;
+                  if (this.y < 0) this.y = height;
+                  if (this.y > height) this.y = 0;
+              }
+              
+              draw() {
+                  // FIX 3: Partikel viel heller (0.5 statt 0.2)
+                  ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                  ctx.beginPath();
+                  ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                  ctx.fill();
+              }
+          }
+          
+          for (let i = 0; i < particleCount; i++) {
+              particles.push(new Particle());
+          }
+          
+          function animate() {
+              ctx.clearRect(0, 0, width, height);
+              
+              for (let i = 0; i < particles.length; i++) {
+                  particles[i].update();
+                  particles[i].draw();
+                  
+                  for (let j = i; j < particles.length; j++) {
+                      const dx = particles[i].x - particles[j].x;
+                      const dy = particles[i].y - particles[j].y;
+                      const distance = Math.sqrt(dx * dx + dy * dy);
+                      
+                      if (distance < connectionDist) {
+                          // FIX 3: Verbindungslinien heller (Faktor 0.15 statt 0.05)
+                          ctx.strokeStyle = `rgba(255, 255, 255, ${0.15 - distance/connectionDist * 0.15})`;
+                          ctx.lineWidth = 1;
+                          ctx.beginPath();
+                          ctx.moveTo(particles[i].x, particles[i].y);
+                          ctx.lineTo(particles[j].x, particles[j].y);
+                          ctx.stroke();
+                      }
+                  }
+                  
+                  if (mouse.x != null) {
+                      const dx = particles[i].x - mouse.x;
+                      const dy = particles[i].y - mouse.y;
+                      const distance = Math.sqrt(dx * dx + dy * dy);
+                      
+                      if (distance < mouseDist) {
+                          // FIX 3: Maus-Verbindung sehr stark (Cyan/Blau Glow)
+                          ctx.strokeStyle = `rgba(59, 130, 246, ${0.6 - distance/mouseDist * 0.6})`;
+                          ctx.lineWidth = 1.5;
+                          ctx.beginPath();
+                          ctx.moveTo(particles[i].x, particles[i].y);
+                          ctx.lineTo(mouse.x, mouse.y);
+                          ctx.stroke();
+                      }
+                  }
+              }
+              
+              requestAnimationFrame(animate);
+          }
+          
+          animate();
+      })();
+    </script>
+    <svg style="position: absolute; height: 0; width: 0; overflow: hidden;">
+      <defs>
+        <filter id="filter-protanopia"><feColorMatrix type="matrix" values="0.567,0.433,0,0,0 0.558,0.442,0,0,0 0,0.242,0.758,0,0 0,0,0,1,0" /></filter>
+        <filter id="filter-deuteranopia"><feColorMatrix type="matrix" values="0.625,0.375,0,0,0 0.7,0.3,0,0,0 0,0.3,0.7,0,0 0,0,0,1,0" /></filter>
+        <filter id="filter-tritanopia"><feColorMatrix type="matrix" values="0.95,0.05,0,0,0 0,0.433,0.567,0,0 0,0.475,0.525,0,0 0,0,0,1,0" /></filter>
+        
+        <filter id="filter-diplopia">
+            <feOffset in="SourceGraphic" dx="15" dy="-5" result="ghost"/>
+            <feComponentTransfer in="ghost" result="ghostFade">
+                <feFuncA type="linear" slope="0.5"/>
+            </feComponentTransfer>
+            <feMerge>
+                <feMergeNode in="SourceGraphic"/>
+                <feMergeNode in="ghostFade"/>
+            </feMerge>
+        </filter>
+        <filter id="filter-metamorphopsia">
+            <feTurbulence type="turbulence" baseFrequency="0.01 0.02" numOctaves="1" result="turbulence" />
+            <feDisplacementMap in2="turbulence" in="SourceGraphic" scale="15" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+      </defs>
+    </svg>
+    
+    <script>
+      (function() {
+          let deferredPrompt;
+          const statusReady = document.getElementById('pwa-ready-msg');
+          const statusFallback = document.getElementById('pwa-fallback-msg');
+          const installBtn = document.getElementById('pwa-install-btn-modal');
+          const modal = document.getElementById('pwa-modal');
+
+          // 2. Browser Event abfangen
+          window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // UI Update: Wir haben einen Install-Kandidaten!
+            if(statusReady && statusFallback) {
+                statusReady.style.display = 'block';
+                statusFallback.style.display = 'none';
+            }
+          });
+
+          // 3. Klick im Modal
+          if(installBtn) {
+              installBtn.addEventListener('click', async () => {
+                if (!deferredPrompt) return;
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                deferredPrompt = null;
+                // Wenn installiert -> Modal schließen
+                if(outcome === 'accepted') {
+                    modal.classList.remove('active');
+                }
+              });
+          }
+
+          // 4. Reset bei erfolgreicher Installation
+          window.addEventListener('appinstalled', () => {
+             console.log('App installiert');
+             // Status zurücksetzen, falls Nutzer das Modal nochmal öffnet
+             if(statusReady && statusFallback) {
+                statusReady.style.display = 'none';
+                statusFallback.innerHTML = "<p style='color: #10b981; font-weight:bold;'>✅ App ist bereits installiert.</p>";
+                statusFallback.style.display = 'block';
+             }
+          });
+      })();
+    </script>
+  </body>
+</html>

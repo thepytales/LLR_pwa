@@ -16,138 +16,149 @@ const FURNITURE_Y_OFFSET = 0.22; // Standardhöhe für Möbel
 const VISION_LAYER_HEIGHT = 2.2; 
 const TOP_VIEW_HEIGHT = 18; 
 
-// Glossar Texte & Pädagogische Tipps
-const SIM_GLOSSARY = {
-    // Visus
-    normal: { title: "Normale Sicht", text: "Keine Einschränkungen aktiv.", tip: "" },
-    low: { 
-        title: "Sehbehinderung", 
-        text: "Visus < 0.3. Details an der Tafel oder in Büchern sind nur schwer erkennbar. Vergrößerungshilfen sind nötig.", 
-        tip: "Vergrößerte Arbeitsblätter (A3) anbieten. Tafelbild verbalisieren (alles laut vorlesen). Sitzplatz nah an der Tafel." 
-    },
-    severe: { 
-        title: "Hochgradige Sehbehinderung", 
-        text: "Visus < 0.05. Orientierung ist noch möglich, aber Lesen normaler Schrift ist unmöglich.", 
-        tip: "Digitale Hilfsmittel (Tablet mit Zoom/VoiceOver) zulassen. Taktile Leitsysteme im Raum freihalten. Starke Kontraste nutzen." 
-    },
-    blind: { 
-        title: "Blindheit", 
-        text: "Visus < 0.02. Visuelle Informationen fehlen fast vollständig. Tast- und Hörsinn sind entscheidend.", 
-        tip: "Fester Sitzplatz (Orientierung). Materialien digital barrierefrei oder in Braille bereitstellen. Laufwege zwingend freihalten!" 
-    },
-
-    // Gesichtsfeld
-    tunnel: { 
-        title: "Tunnelblick (RP)", 
-        text: "Verlust der Peripherie (Röhrensehen). Orientierung im Raum ist massiv erschwert, zentrales Lesen oft noch gut möglich.", 
-        tip: "Ordnung halten! Taschen gehören nicht in den Gang (Stolperfallen). Schüler zentral vor die Tafel setzen (nicht seitlich)." 
-    },
-    spot: { 
-        title: "Makuladegeneration (AMD)", 
-        text: "Zentraler Ausfall. Gesichter und Texte können nicht fixiert werden. Orientierung im Raum funktioniert über peripheres Sehen.", 
-        tip: "Schüler schaut oft 'daneben', um zu sehen – das ist kein Desinteresse! Vergrößerung hilft oft nicht (fällt in den toten Winkel)." 
-    },
-    scotoma: { 
-        title: "Parazentralskotom", 
-        text: "Inselförmige Ausfälle neben dem Zentrum. Buchstaben oder Wörter 'springen' oder fehlen beim Lesen.", 
-        tip: "Geduld beim Lesen. Serifenlose, klare Schriftarten (Arial, Verdana) mit erhöhtem Zeilenabstand nutzen." 
-    },
-    hemi: { 
-        title: "Hemianopsie (Rechts)", 
-        text: "Rechtsseitiger Ausfall (z. B. nach Schlaganfall). Die rechte Hälfte der Welt fehlt.", 
-        tip: "Sitzplatz LINKS im Raum wählen, damit das Geschehen im gesunden (linken) Sichtfeld liegt. Schüler nicht von rechts ansprechen." 
-    },
-    'hemi-l': { 
-        title: "Hemianopsie (Links)", 
-        text: "Linksseitiger Ausfall. Die linke Hälfte der Welt fehlt.", 
-        tip: "Sitzplatz RECHTS im Raum wählen. Achtung bei Gruppenarbeit: Partner sollte rechts sitzen." 
-    },
-    quadrant: { 
-        title: "Quadrantenanopsie", 
-        text: "Ausfall eines Viertels (hier oben rechts). Kann beim Blick auf die Tafel stören.", 
-        tip: "Tafelbild kompakt halten. Prüfen, ob der Schüler den oberen Tafelrand sehen kann, ohne den Kopf extrem zu verrenken." 
-    },
-    ring: { 
-        title: "Ringskotom", 
-        text: "Ein blinder Ring um das Zentrum. Objekte verschwinden beim Näherkommen kurzzeitig.", 
-        tip: "Vorsicht im Sportunterricht (Bälle verschwinden plötzlich). Klare Absprachen bei Bewegungen im Raum." 
-    },
-
-    // Licht & Trübung
-    cataract: { 
-        title: "Katarakt (Grauer Star)", 
-        text: "Trübung der Linse. Alles wirkt milchig. Hohe Blendempfindlichkeit bei Gegenlicht.", 
-        tip: "Platz mit Rücken zum Fenster. Jalousien nutzen, um Blendung auf der Tafel zu vermeiden. Hohe Kontraste an der Tafel (Schwarz auf Weiß)." 
-    },
-    glaucoma: { 
-        title: "Glaukom (Grüner Star)", 
-        text: "Schleichender Prozess. Oft Mischung aus Gesichtsfeldausfällen und Nebel.", 
-        tip: "Stressfreies Sehumfeld schaffen. Pausen für die Augen einplanen. Gute, blendfreie Raumbeleuchtung sicherstellen." 
-    },
-    photophobia: { 
-        title: "Extreme Photophobie", 
-        text: "Lichtschmerz (z. B. Albinismus). Normale Raumbeleuchtung blendet massiv. Kontraste verschwinden.", 
-        tip: "Dunkelster Platz im Raum (Ecke). Erlaubnis für Sonnenbrille/Kappi im Unterricht. 'Dark Mode' auf Tablets nutzen." 
-    },
-    nyctalopia: { 
-        title: "Nachtblindheit", 
-        text: "Sehversagen bei Dämmerung. Im dunklen Klassenzimmer (Beamer) orientierungslos.", 
-        tip: "Bei Filmvorführungen/Beamer-Einsatz: Schüler nicht im Raum umherlaufen lassen. Kleine Platzbeleuchtung erlauben." 
-    },
-    retina: { 
-        title: "Diabetische Retinopathie", 
-        text: "Fleckige Ausfälle (Skotome) im ganzen Bild. Tagesform schwankt stark.", 
-        tip: "Flexibilität bei der Leistungserwartung (Tagesform). Kopien in sehr guter Qualität (keine blassen Matrizen)." 
-    },
-
-    // Neuro & Verarbeitung
-    cvi: { 
-        title: "CVI (Zerebrale Sehstörung)", 
-        text: "Gehirn kann Reize nicht verarbeiten. 'Wimmelbilder' (voller Raum) führen zu Stress/Orientierungsverlust.", 
-        tip: "Reizreduktion! Arbeitsblätter entschlacken (nur eine Aufgabe pro Seite). Ruhiger Sitzplatz (Wandblick, nicht in den Raum)." 
-    },
-    crowding: { 
-        title: "Crowding / Neglect", 
-        text: "Visuelle Überfüllung. Eng stehende Objekte/Buchstaben verschmelzen.", 
-        tip: "Größerer Buchstabenabstand und Zeilenabstand. Abdeckschablone beim Lesen nutzen, um Nachbarzeilen auszublenden." 
-    },
-    metamorphopsia: { 
-        title: "Metamorphopsie", 
-        text: "Verzerrtsehen. Gerade Linien (Tafel, Karopapier) wirken wellig. Lesen/Schreiben erschwert.", 
-        tip: "Linienverstärktes Papier anbieten. Schreiben am Tablet erlauben (Zoom/Raster hilft)." 
-    },
-    diplopia: { 
-        title: "Diplopie (Doppelbilder)", 
-        text: "Bilder decken sich nicht. Führt zu Kopfschmerzen, Übelkeit und Greif-Fehlern.", 
-        tip: "Schüler ermüdet schnell (Kopfschmerz). Leseportionen einteilen. Beim Experimentieren (Chemie/Physik) Assistenz stellen." 
-    },
-    noise: { 
-        title: "Visual Snow", 
-        text: "Dauerhaftes Bildrauschen ('Schnee'). Senkt Kontraste und erhöht die Konzentrationslast.", 
-        tip: "Kognitive Pausen. Vermeidung von stark gemusterten Hintergründen auf Arbeitsblättern/Tafeln." 
-    },
-
-    // Farbe
-    achromatopsia: { 
-        title: "Achromatopsie", 
-        text: "Totale Farbenblindheit. Oft verbunden mit hoher Lichtempfindlichkeit.", 
-        tip: "Niemals Informationen nur über Farbe codieren! Immer Muster oder Beschriftungen nutzen (z.B. in Diagrammen)." 
-    },
-    protanopia: { 
-        title: "Protanopie (Rot-Blind)", 
-        text: "Rot wird nicht wahrgenommen. Ampeln/Warnhinweise wirken dunkelgrau.", 
-        tip: "Achtung bei Korrekturen (Roter Stift ist schwer lesbar). Rot nicht als Signalfarbe an der Tafel nutzen." 
-    },
-    deuteranopia: { 
-        title: "Deuteranopie (Grün-Blind)", 
-        text: "Rot und Grün sind schwer zu unterscheiden. Relevant für Landkarten.", 
-        tip: "Farbige Kreide an der Tafel vermeiden (Kontrast zu Grün/Grau schlecht). Landkarten beschriften statt färben." 
-    },
-    tritanopia: { 
-        title: "Tritanopie (Blau-Blind)", 
-        text: "Blau und Gelb werden verwechselt. Selten.", 
-        tip: "Farbcodierungen in Unterrichtsmaterialien prüfen (nicht Gelb auf Weiß oder Blau auf Grün)." 
+// Glossar Texte & Pädagogische Tipps  
+const SIM_GLOSSARY = {  
+    // Visus  
+    normal: { title: "Normale Sicht", text: "Keine Einschränkungen aktiv.", tip: "" },  
+    low: { // Bei Kindern meistens durch eine Fehlbildung des Augapfels → Kurz-/Weitsichtigkeit (Myopie (Augapfel zu lang)/Hyperopie (Augapfel zu kurz)) oder Astigmatismus (asymmetrische, ovale Hornhautkrümmung)
+        title: "Sehbehinderung",   
+        text: "Visus < 0.3. Details an der Tafel oder in Büchern sind nur schwer erkennbar. Vergrößerungshilfen sind nötig.",   
+        tip: "Vergrößerte Arbeitsblätter (A3) anbieten. Tafelbild verbalisieren (alles laut vorlesen). Sitzplatz nah an der Tafel."   
+    },  
+    severe: {   
+        title: "Hochgradige Sehbehinderung",   
+        text: "Visus < 0.05. Orientierung ist noch möglich, aber Lesen normaler Schrift ist unmöglich.",   
+        tip: "Digitale Hilfsmittel (Tablet mit Zoom/VoiceOver) zulassen. Taktile Leitsysteme im Raum freihalten. Starke Kontraste bei Farben, Linien und Texturen nutzen."   
+    },  
+    blind: {   
+        title: "Blindheit",   
+        text: "Visus < 0.02. Visuelle Informationen fehlen fast vollständig. Tast- und Hörsinn sind entscheidend.",   
+        tip: "Fester Sitzplatz (Orientierung). Materialien digital barrierefrei oder in Braille bereitstellen. Laufwege zwingend freihalten!"   
+    },  
+// man könnte noch Schielen (Strabismus) und "Lazy Eye" (Amblyopie) hinzufügen:
+// title: "Strabismus (Schielen)"
+// text: "Ständige oder intermittierende Fehlstellung der visuellen Achsen beider Augen. Doppelbilder oder Unterdrückung des visuellen Inputs des Abweichenden Auges als Konsequenzen. Führt zu fehlendem räumlichen Sehen, was Orientierung und Motorik einschränkt (z.B. Fangen)."
+// tip: "Besondere Führung bei räumlichen Tätigkeiten, insbesondere im Sportunterricht. Treppensteigen vermeiden bzw. dabei unterstützen."
+// title: "Amblyopie ('Lazy Eye')"
+// text: "Stark unterentwickelte Sehfähigkeit auf einem Auge. Wird häufig durch Okklusionstherapie (Abkleben des starken Auges) behandelt, was für Aufmerksamkeit sorgt. Räumliches Sehen wird beeinträchtigt."
+// tip: "In Absprache mit Betroffenen Klasse aufklären. Besondere Führung bei räumlichen Tätigkeiten, insbesondere im Sportunterricht. Treppensteigen vermeiden bzw. dabei unterstützen."
+    // Gesichtsfeld  
+    tunnel: {   
+        title: "Retinitis Pigmentosa (RP)",   
+        text: "Verlust der Peripherie (Röhrengesichtsfeld/Tunnelblick), Nachtblindheit. Orientierung im Raum ist massiv erschwert, zentrales Lesen oft noch gut möglich.",   
+        tip: "Ordnung halten! Taschen gehören nicht in den Gang (Stolperfallen). Schüler zentral vor die Tafel setzen (nicht seitlich)."   
+    },  
+    spot: {   
+        title: "Juvenile Makuladegeneration (Morbus Stargardt, Morbus Best)",   
+        text: "Einschränkung des zentralen Gesichtsfelds. Verzerrung von Formen bis hin zu komplettem Ausfall. Gesichter und Texte können nicht fixiert werden. Orientierung im Raum funktioniert über peripheres Sehen.",   
+        tip: "Schüler schaut oft 'daneben', um zu sehen – das ist kein Desinteresse! Vergrößerung hilft oft nicht (fällt in den toten Winkel)."   
+    },  
+    scotoma: {   
+        title: "Parazentralskotom",   
+        text: "Inselförmige Ausfälle neben dem Zentrum, bspw. als Folge von Makuladegeneration oder des Glaukoms. Buchstaben oder Wörter 'springen' oder fehlen beim Lesen.",   
+        tip: "Geduld beim Lesen. Serifenlose, klare Schriftarten (Arial, Verdana) mit erhöhtem Zeilenabstand nutzen."   
+    },  
+    hemi: {   
+        title: "Hemianopsie (Rechts)",   
+        text: "Rechtsseitiger Ausfall (z. B. nach Schlaganfall). Die rechte Hälfte der Welt fehlt.",   
+        tip: "Sitzplatz LINKS im Raum wählen, damit das Geschehen im gesunden (linken) Sichtfeld liegt. Schüler nicht von rechts ansprechen."   
+    },  
+    'hemi-l': {   
+        title: "Hemianopsie (Links)",   
+        text: "Linksseitiger Ausfall. Die linke Hälfte der Welt fehlt.",   
+        tip: "Sitzplatz RECHTS im Raum wählen. Achtung bei Gruppenarbeit: Partner sollte rechts sitzen."   
+    },  
+    quadrant: {   
+        title: "Quadrantenanopsie",   
+        text: "Ausfall eines Viertels (hier oben rechts). Kann beim Blick auf die Tafel stören.",   
+        tip: "Tafelbild kompakt halten. Prüfen, ob der Schüler den oberen Tafelrand sehen kann, ohne den Kopf extrem zu verrenken."   
+    },  
+    ring: {   
+        title: "Ringskotom",   
+        text: "Ein blinder Ring um das Zentrum, bspw. als Folge von Retinits Pigmentosa. Objekte verschwinden beim Näherkommen kurzzeitig.",   
+        tip: "Vorsicht im Sportunterricht (Bälle verschwinden plötzlich). Klare Absprachen bei Bewegungen im Raum."   
+    },  
+  
+    // Licht & Trübung  
+    cataract: {   
+        title: "Katarakt (Grauer Star)",   
+        text: "Trübung der Linse. Alles wirkt milchig. Hohe Blendempfindlichkeit bei Gegenlicht. Reduzierte Farbintensität.",   
+        tip: "Platz mit Rücken zum Fenster. Jalousien nutzen, um Blendung auf der Tafel zu vermeiden. Hohe Kontraste an der Tafel (Gelb auf Blau). Große weiße Flächen vermeiden."   
+    },  
+    glaucoma: {   
+        title: "Glaukom (Grüner Star)",   
+        text: "Überhöhter Augeninnendruck. Schleichender, schmerzfreier Prozess. Oft Mischung aus Gesichtsfeldausfällen (bogenförmige, blinde Flecken) und Nebel.",   
+        tip: "Stressfreies Sehumfeld schaffen. Pausen für die Augen einplanen. Gute, blendfreie Raumbeleuchtung sicherstellen. In fortgeschrittenen Stadien (meist Erblindung) auf taktile Materialien setzen."   
+    },  
+    photophobia: {   
+        title: "Extreme Photophobie",   
+        text: "Lichtschmerz (z. B. bei Albinismus). Normale Raumbeleuchtung blendet massiv. Kontraste verschwinden. Hinweis: Lichtgazing (zwanghaftes Starren in Lichtquellen) als gegensätzliche, neurologisch ähnlich bedingte Folge von CVI.",   
+        tip: "Dunkelster Platz im Raum (Ecke). Erlaubnis für Sonnenbrille/Kappi im Unterricht. 'Dark Mode' auf Tablets nutzen."   
+    },  
+    nyctalopia: {   
+        title: "Nachtblindheit",   
+        text: "Sehversagen bei Dämmerung. Im dunklen Klassenzimmer (Beamer) orientierungslos.",   
+        tip: "Bei Filmvorführungen/Beamer-Einsatz: Schüler nicht im Raum umherlaufen lassen. Kleine Platzbeleuchtung erlauben."   
+    },  
+    retina: {   
+        title: "Diabetische Retinopathie/Frühgeborenen-Retinopathie",   
+        text: "Fleckige Ausfälle (Skotome) im ganzen Bild bis hin zu kompletter Netzhautablösung (Erblindung). Tagesform schwankt stark.",   
+        tip: "Flexibilität bei der Leistungserwartung (Tagesform). Kopien in sehr guter Qualität (keine blassen Matrizen)."   
+    },  
+  
+    // Neuro & Verarbeitung  
+    cvi: {   
+        title: "CVI (Zerebrale Sehstörung)",   
+        text: "Oberbegriff. Gehirn kann visuelle Reize nicht (komplett) verarbeiten. 'Wimmelbilder' (voller Raum) führen zu Wahrnehmungsstörungen, die zu Stress/Orientierungsverlust führen.",   
+        tip: "Reizreduktion! Arbeitsblätter entschlacken (nur eine Aufgabe pro Seite). Ruhiger Sitzplatz (Wandblick, nicht in den Raum)."   
+    },  
+    crowding: {   
+        title: "Crowding",   
+        text: "Visuelle Überfüllung. Einzelne Objekte in ruhiger Umgebung werden erkannt. Eng stehende/viele Objekte (u.a. Buchstaben) verschmelzen miteinander.",   
+        tip: "Größerer Buchstabenabstand und Zeilenabstand. Abdeckschablone beim Lesen nutzen, um Nachbarzeilen auszublenden. Mit hohen Kontrasten arbeiten. Visuelle Komplexität massiv reduzieren (≠ 'Aufgaben einfacher machen'!)."   
+    },  
+    neglect: {
+   title: "Neglect",
+   text: "Halbseitige Vernachlässigung des Raumes (ähnlich wie Hemianopsie). Neurologisch bedingt wird die Hälfte der visuellen Informationen vernachlässigt.",
+   tip: "Sitzplatz entsprechend der gesunden Gesichtsfeldhälfte wählen."
     }
+    metamorphopsia: {   
+        title: "Metamorphopsie",   
+        text: "Verzerrtsehen, meist als Folge von Makuladegeneration. Gerade Linien (Tafel, Karopapier) wirken wellig. Lesen/Schreiben erschwert.",   
+        tip: "Linienverstärktes Papier anbieten. Schreiben am Tablet erlauben (Zoom/Raster hilft)."   
+    },  
+    diplopia: {   
+        title: "Diplopie (Doppelbilder)",   
+        text: "Bilder decken sich nicht. Führt zu Kopfschmerzen, Übelkeit und Greif-Fehlern. Betroffene ermüden schnell (Kopfschmerz).",   
+        tip: "Leseportionen einteilen. Beim Experimentieren (Chemie/Physik) Assistenz stellen."   
+    },  
+    noise: {   
+        title: "Visual Snow",   
+        text: "Dauerhaftes Bildrauschen ('Schnee'). Senkt Kontraste und erhöht die Konzentrationslast.",   
+        tip: "Kognitive Pausen. Vermeidung von stark gemusterten Hintergründen auf Arbeitsblättern/Tafeln. Hohe visuelle Kontraste herstellen."   
+    },  
+  
+    // Farbe  
+    achromatopsia: {   
+        title: "Achromatopsie",   
+        text: "Totale Farbenblindheit. Oft verbunden mit hoher Lichtempfindlichkeit.",   
+        tip: "Niemals Informationen nur über Farbe codieren! Immer Muster, Worte oder Beschriftungen nutzen (z.B. in Diagrammen)."   
+    },  
+    protanopia: {   
+        title: "Protanomalie bzw. Protanopie (Rot-Schwäche bzw. -Blindheit)",   
+        text: "Rot wird nicht wahrgenommen. Ampeln/Warnhinweise wirken dunkelgrau.",   
+        tip: "Achtung bei Korrekturen (Roter Stift ist schwer lesbar). Rot nicht als Signalfarbe an der Tafel nutzen."   
+    },  
+    deuteranopia: {   
+        title: "Deuteranomalie bzw. Deuteranopie (Grün-Scwhäche bzw. -Blindheit)",   
+        text: "Rot und Grün sind schwer zu unterscheiden. Relevant für Landkarten.",   
+        tip: "Farbige Kreide an der Tafel vermeiden (Kontrast zu Grün/Grau schlecht). Landkarten beschriften statt färben."   
+    },  
+    tritanopia: {   
+        title: "Tritanomalie bzw. Tritanopie (Blau-Schwäche bzw. Blindheit)",   
+        text: "Blau und Gelb werden verwechselt. Sehr Selten.",   
+        tip: "Farbcodierungen in Unterrichtsmaterialien prüfen (nicht Gelb auf Weiß oder Blau auf Grün)."   
+    }  
 };
 
 // Einstellungen

@@ -16,138 +16,153 @@ const FURNITURE_Y_OFFSET = 0.22; // Standardhöhe für Möbel
 const VISION_LAYER_HEIGHT = 2.2; 
 const TOP_VIEW_HEIGHT = 18; 
 
-// Glossar Texte & Pädagogische Tipps
-const SIM_GLOSSARY = {
-    // Visus
-    normal: { title: "Normale Sicht", text: "Keine Einschränkungen aktiv.", tip: "" },
+// Glossar Texte & Pädagogische Tipps  
+const SIM_GLOSSARY = {  
+    // Visus  
+    normal: { title: "Normale Sicht", text: "Keine Einschränkungen aktiv.", tip: "" },  
     low: { 
-        title: "Sehbehinderung", 
-        text: "Visus < 0.3. Details an der Tafel oder in Büchern sind nur schwer erkennbar. Vergrößerungshilfen sind nötig.", 
-        tip: "Vergrößerte Arbeitsblätter (A3) anbieten. Tafelbild verbalisieren (alles laut vorlesen). Sitzplatz nah an der Tafel." 
-    },
-    severe: { 
-        title: "Hochgradige Sehbehinderung", 
-        text: "Visus < 0.05. Orientierung ist noch möglich, aber Lesen normaler Schrift ist unmöglich.", 
-        tip: "Digitale Hilfsmittel (Tablet mit Zoom/VoiceOver) zulassen. Taktile Leitsysteme im Raum freihalten. Starke Kontraste nutzen." 
-    },
-    blind: { 
-        title: "Blindheit", 
-        text: "Visus < 0.02. Visuelle Informationen fehlen fast vollständig. Tast- und Hörsinn sind entscheidend.", 
-        tip: "Fester Sitzplatz (Orientierung). Materialien digital barrierefrei oder in Braille bereitstellen. Laufwege zwingend freihalten!" 
-    },
+        title: "Sehbehinderung (z.B. Myopie, Hyperopie, Astigmatismus)",  
+        text: "Visus < 0.3. Details an der Tafel oder in Büchern sind nur schwer erkennbar. Vergrößerungshilfen sind nötig. Bei Kindern meistens durch Fehlbildung des Augapfels oder asymmetrische Hornhautkrümmung.",  
+        tip: "Vergrößerte Arbeitsblätter (A3) anbieten. Tafelbild verbalisieren (alles laut vorlesen). Sitzplatz nah an der Tafel."  
+    },  
+    severe: {  
+        title: "Hochgradige Sehbehinderung",  
+        text: "Visus < 0.05. Orientierung ist noch möglich, aber Lesen normaler Schrift ist unmöglich.",  
+        tip: "Digitale Hilfsmittel (Tablet mit Zoom/VoiceOver) zulassen. Taktile Leitsysteme im Raum freihalten. Starke Kontraste bei Farben, Linien und Texturen nutzen."  
+    },  
+    blind: {  
+        title: "Blindheit",  
+        text: "Visus < 0.02. Visuelle Informationen fehlen fast vollständig. Tast- und Hörsinn sind entscheidend.",  
+        tip: "Fester Sitzplatz (Orientierung). Materialien digital barrierefrei oder in Braille bereitstellen. Laufwege zwingend freihalten!"  
+    },  
 
-    // Gesichtsfeld
-    tunnel: { 
-        title: "Tunnelblick (RP)", 
-        text: "Verlust der Peripherie (Röhrensehen). Orientierung im Raum ist massiv erschwert, zentrales Lesen oft noch gut möglich.", 
-        tip: "Ordnung halten! Taschen gehören nicht in den Gang (Stolperfallen). Schüler zentral vor die Tafel setzen (nicht seitlich)." 
-    },
-    spot: { 
-        title: "Makuladegeneration (AMD)", 
-        text: "Zentraler Ausfall. Gesichter und Texte können nicht fixiert werden. Orientierung im Raum funktioniert über peripheres Sehen.", 
-        tip: "Schüler schaut oft 'daneben', um zu sehen – das ist kein Desinteresse! Vergrößerung hilft oft nicht (fällt in den toten Winkel)." 
-    },
-    scotoma: { 
-        title: "Parazentralskotom", 
-        text: "Inselförmige Ausfälle neben dem Zentrum. Buchstaben oder Wörter 'springen' oder fehlen beim Lesen.", 
-        tip: "Geduld beim Lesen. Serifenlose, klare Schriftarten (Arial, Verdana) mit erhöhtem Zeilenabstand nutzen." 
-    },
-    hemi: { 
-        title: "Hemianopsie (Rechts)", 
-        text: "Rechtsseitiger Ausfall (z. B. nach Schlaganfall). Die rechte Hälfte der Welt fehlt.", 
-        tip: "Sitzplatz LINKS im Raum wählen, damit das Geschehen im gesunden (linken) Sichtfeld liegt. Schüler nicht von rechts ansprechen." 
-    },
-    'hemi-l': { 
-        title: "Hemianopsie (Links)", 
-        text: "Linksseitiger Ausfall. Die linke Hälfte der Welt fehlt.", 
-        tip: "Sitzplatz RECHTS im Raum wählen. Achtung bei Gruppenarbeit: Partner sollte rechts sitzen." 
-    },
-    quadrant: { 
-        title: "Quadrantenanopsie", 
-        text: "Ausfall eines Viertels (hier oben rechts). Kann beim Blick auf die Tafel stören.", 
-        tip: "Tafelbild kompakt halten. Prüfen, ob der Schüler den oberen Tafelrand sehen kann, ohne den Kopf extrem zu verrenken." 
-    },
-    ring: { 
-        title: "Ringskotom", 
-        text: "Ein blinder Ring um das Zentrum. Objekte verschwinden beim Näherkommen kurzzeitig.", 
-        tip: "Vorsicht im Sportunterricht (Bälle verschwinden plötzlich). Klare Absprachen bei Bewegungen im Raum." 
-    },
+    // Gesichtsfeld  
+    tunnel: {  
+        title: "Retinitis Pigmentosa (RP) / Tunnelblick",  
+        text: "Verlust der Peripherie (Röhrengesichtsfeld/Tunnelblick), Nachtblindheit. Orientierung im Raum ist massiv erschwert, zentrales Lesen oft noch gut möglich.",  
+        tip: "Ordnung halten! Taschen gehören nicht in den Gang (Stolperfallen). Schüler zentral vor die Tafel setzen (nicht seitlich)."  
+    },  
+    spot: {  
+        title: "Juvenile Makuladegeneration (Morbus Stargardt, Best)",  
+        text: "Einschränkung des zentralen Gesichtsfelds. Verzerrung von Formen bis hin zu komplettem Ausfall. Gesichter und Texte können nicht fixiert werden. Orientierung im Raum funktioniert über peripheres Sehen.",  
+        tip: "Schüler schaut oft 'daneben', um zu sehen – das ist kein Desinteresse! Vergrößerung hilft oft nicht (fällt in den toten Winkel)."  
+    },  
+    scotoma: {  
+        title: "Parazentralskotom",  
+        text: "Inselförmige Ausfälle neben dem Zentrum, bspw. als Folge von Makuladegeneration oder des Glaukoms. Buchstaben oder Wörter 'springen' oder fehlen beim Lesen.",  
+        tip: "Geduld beim Lesen. Serifenlose, klare Schriftarten (Arial, Verdana) mit erhöhtem Zeilenabstand nutzen."  
+    },  
+    hemi: {  
+        title: "Hemianopsie (Rechts)",  
+        text: "Rechtsseitiger Ausfall (z. B. nach Schlaganfall). Die rechte Hälfte der Welt fehlt.",  
+        tip: "Sitzplatz LINKS im Raum wählen, damit das Geschehen im gesunden (linken) Sichtfeld liegt. Schüler nicht von rechts ansprechen."  
+    },  
+    'hemi-l': {  
+        title: "Hemianopsie (Links)",  
+        text: "Linksseitiger Ausfall. Die linke Hälfte der Welt fehlt.",  
+        tip: "Sitzplatz RECHTS im Raum wählen. Achtung bei Gruppenarbeit: Partner sollte rechts sitzen."  
+    },  
+    quadrant: {  
+        title: "Quadrantenanopsie",  
+        text: "Ausfall eines Viertels (hier oben rechts). Kann beim Blick auf die Tafel stören.",  
+        tip: "Tafelbild kompakt halten. Prüfen, ob der Schüler den oberen Tafelrand sehen kann, ohne den Kopf extrem zu verrenken."  
+    },  
+    ring: {  
+        title: "Ringskotom",  
+        text: "Ein blinder Ring um das Zentrum, bspw. als Folge von Retinits Pigmentosa. Objekte verschwinden beim Näherkommen kurzzeitig.",  
+        tip: "Vorsicht im Sportunterricht (Bälle verschwinden plötzlich). Klare Absprachen bei Bewegungen im Raum."  
+    },  
 
-    // Licht & Trübung
-    cataract: { 
-        title: "Katarakt (Grauer Star)", 
-        text: "Trübung der Linse. Alles wirkt milchig. Hohe Blendempfindlichkeit bei Gegenlicht.", 
-        tip: "Platz mit Rücken zum Fenster. Jalousien nutzen, um Blendung auf der Tafel zu vermeiden. Hohe Kontraste an der Tafel (Schwarz auf Weiß)." 
-    },
-    glaucoma: { 
-        title: "Glaukom (Grüner Star)", 
-        text: "Schleichender Prozess. Oft Mischung aus Gesichtsfeldausfällen und Nebel.", 
-        tip: "Stressfreies Sehumfeld schaffen. Pausen für die Augen einplanen. Gute, blendfreie Raumbeleuchtung sicherstellen." 
-    },
-    photophobia: { 
-        title: "Extreme Photophobie", 
-        text: "Lichtschmerz (z. B. Albinismus). Normale Raumbeleuchtung blendet massiv. Kontraste verschwinden.", 
-        tip: "Dunkelster Platz im Raum (Ecke). Erlaubnis für Sonnenbrille/Kappi im Unterricht. 'Dark Mode' auf Tablets nutzen." 
-    },
-    nyctalopia: { 
-        title: "Nachtblindheit", 
-        text: "Sehversagen bei Dämmerung. Im dunklen Klassenzimmer (Beamer) orientierungslos.", 
-        tip: "Bei Filmvorführungen/Beamer-Einsatz: Schüler nicht im Raum umherlaufen lassen. Kleine Platzbeleuchtung erlauben." 
-    },
-    retina: { 
-        title: "Diabetische Retinopathie", 
-        text: "Fleckige Ausfälle (Skotome) im ganzen Bild. Tagesform schwankt stark.", 
-        tip: "Flexibilität bei der Leistungserwartung (Tagesform). Kopien in sehr guter Qualität (keine blassen Matrizen)." 
-    },
+    // Licht & Trübung  
+    cataract: {  
+        title: "Katarakt (Grauer Star)",  
+        text: "Trübung der Linse. Alles wirkt milchig. Hohe Blendempfindlichkeit bei Gegenlicht. Reduzierte Farbintensität.",  
+        tip: "Platz mit Rücken zum Fenster. Jalousien nutzen, um Blendung auf der Tafel zu vermeiden. Hohe Kontraste an der Tafel (Gelb auf Blau). Große weiße Flächen vermeiden."  
+    },  
+    glaucoma: {  
+        title: "Glaukom (Grüner Star)",  
+        text: "Überhöhter Augeninnendruck. Schleichender, schmerzfreier Prozess. Oft Mischung aus Gesichtsfeldausfällen (bogenförmige, blinde Flecken) und Nebel.",  
+        tip: "Stressfreies Sehumfeld schaffen. Pausen für die Augen einplanen. Gute, blendfreie Raumbeleuchtung sicherstellen. In fortgeschrittenen Stadien auf taktile Materialien setzen."  
+    },  
+    photophobia: {  
+        title: "Extreme Photophobie",  
+        text: "Lichtschmerz (z. B. bei Albinismus). Normale Raumbeleuchtung blendet massiv. Kontraste verschwinden. Hinweis: Lichtgazing als gegensätzliche Folge von CVI.",  
+        tip: "Dunkelster Platz im Raum (Ecke). Erlaubnis für Sonnenbrille/Kappi im Unterricht. 'Dark Mode' auf Tablets nutzen."  
+    },  
+    nyctalopia: {  
+        title: "Nachtblindheit",  
+        text: "Sehversagen bei Dämmerung. Im dunklen Klassenzimmer (Beamer) orientierungslos.",  
+        tip: "Bei Filmvorführungen/Beamer-Einsatz: Schüler nicht im Raum umherlaufen lassen. Kleine Platzbeleuchtung erlauben."  
+    },  
+    retina: {  
+        title: "Diabetische / Frühgeborenen-Retinopathie",  
+        text: "Fleckige Ausfälle (Skotome) im ganzen Bild bis hin zu kompletter Netzhautablösung (Erblindung). Tagesform schwankt stark.",  
+        tip: "Flexibilität bei der Leistungserwartung (Tagesform). Kopien in sehr guter Qualität (keine blassen Matrizen)."  
+    },  
 
-    // Neuro & Verarbeitung
-    cvi: { 
-        title: "CVI (Zerebrale Sehstörung)", 
-        text: "Gehirn kann Reize nicht verarbeiten. 'Wimmelbilder' (voller Raum) führen zu Stress/Orientierungsverlust.", 
-        tip: "Reizreduktion! Arbeitsblätter entschlacken (nur eine Aufgabe pro Seite). Ruhiger Sitzplatz (Wandblick, nicht in den Raum)." 
+    // Neuro & Verarbeitung  
+    cvi: {  
+        title: "CVI (Zerebrale Sehstörung)",  
+        text: "Oberbegriff. Gehirn kann visuelle Reize nicht (komplett) verarbeiten. 'Wimmelbilder' (voller Raum) führen zu Wahrnehmungsstörungen, die zu Stress/Orientierungsverlust führen.",  
+        tip: "Reizreduktion! Arbeitsblätter entschlacken (nur eine Aufgabe pro Seite). Ruhiger Sitzplatz (Wandblick, nicht in den Raum)."  
+    },  
+    crowding: {  
+        title: "Crowding",  
+        text: "Visuelle Überfüllung. Einzelne Objekte in ruhiger Umgebung werden erkannt. Eng stehende/viele Objekte verschmelzen miteinander.",  
+        tip: "Größerer Buchstabenabstand und Zeilenabstand. Abdeckschablone beim Lesen nutzen. Visuelle Komplexität massiv reduzieren (≠ 'Aufgaben einfacher machen'!)."  
+    },  
+    neglect: {
+        title: "Neglect",
+        text: "Halbseitige Vernachlässigung des Raumes. Neurologisch bedingt wird die Hälfte der visuellen Informationen vernachlässigt.",
+        tip: "Sitzplatz entsprechend der gesunden Gesichtsfeldhälfte wählen."
     },
-    crowding: { 
-        title: "Crowding / Neglect", 
-        text: "Visuelle Überfüllung. Eng stehende Objekte/Buchstaben verschmelzen.", 
-        tip: "Größerer Buchstabenabstand und Zeilenabstand. Abdeckschablone beim Lesen nutzen, um Nachbarzeilen auszublenden." 
+    metamorphopsia: {  
+        title: "Metamorphopsie",  
+        text: "Verzerrtsehen, meist als Folge von Makuladegeneration. Gerade Linien (Tafel, Karopapier) wirken wellig. Lesen/Schreiben erschwert.",  
+        tip: "Linienverstärktes Papier anbieten. Schreiben am Tablet erlauben (Zoom/Raster hilft)."  
+    },  
+    diplopia: {  
+        title: "Diplopie (Doppelbilder)",  
+        text: "Bilder decken sich nicht. Führt zu Kopfschmerzen, Übelkeit und Greif-Fehlern. Betroffene ermüden schnell.",  
+        tip: "Leseportionen einteilen. Beim Experimentieren (Chemie/Physik) Assistenz stellen."  
+    },  
+    noise: {  
+        title: "Visual Snow",  
+        text: "Dauerhaftes Bildrauschen ('Schnee'). Senkt Kontraste und erhöht die Konzentrationslast.",  
+        tip: "Kognitive Pausen. Vermeidung von stark gemusterten Hintergründen auf Arbeitsblättern/Tafeln. Hohe visuelle Kontraste herstellen."  
     },
-    metamorphopsia: { 
-        title: "Metamorphopsie", 
-        text: "Verzerrtsehen. Gerade Linien (Tafel, Karopapier) wirken wellig. Lesen/Schreiben erschwert.", 
-        tip: "Linienverstärktes Papier anbieten. Schreiben am Tablet erlauben (Zoom/Raster hilft)." 
+    strabismus: {
+        title: "Strabismus (Schielen)",
+        text: "Fehlstellung der visuellen Achsen. Doppelbilder oder Unterdrückung des Inputs des abweichenden Auges. Führt zu fehlendem räumlichen Sehen (Orientierung/Motorik).",
+        tip: "Besondere Führung bei räumlichen Tätigkeiten, insbesondere im Sportunterricht. Treppensteigen vermeiden bzw. dabei unterstützen."
     },
-    diplopia: { 
-        title: "Diplopie (Doppelbilder)", 
-        text: "Bilder decken sich nicht. Führt zu Kopfschmerzen, Übelkeit und Greif-Fehlern.", 
-        tip: "Schüler ermüdet schnell (Kopfschmerz). Leseportionen einteilen. Beim Experimentieren (Chemie/Physik) Assistenz stellen." 
-    },
-    noise: { 
-        title: "Visual Snow", 
-        text: "Dauerhaftes Bildrauschen ('Schnee'). Senkt Kontraste und erhöht die Konzentrationslast.", 
-        tip: "Kognitive Pausen. Vermeidung von stark gemusterten Hintergründen auf Arbeitsblättern/Tafeln." 
-    },
+    amblyopia: {
+        title: "Amblyopie ('Lazy Eye')",
+        text: "Stark unterentwickelte Sehfähigkeit auf einem Auge. Wird häufig durch Okklusionstherapie behandelt. Räumliches Sehen wird beeinträchtigt.",
+        tip: "In Absprache mit Betroffenen Klasse aufklären. Besondere Führung bei räumlichen Tätigkeiten. Treppensteigen unterstützen."
+    },  
 
-    // Farbe
-    achromatopsia: { 
-        title: "Achromatopsie", 
-        text: "Totale Farbenblindheit. Oft verbunden mit hoher Lichtempfindlichkeit.", 
-        tip: "Niemals Informationen nur über Farbe codieren! Immer Muster oder Beschriftungen nutzen (z.B. in Diagrammen)." 
-    },
-    protanopia: { 
-        title: "Protanopie (Rot-Blind)", 
-        text: "Rot wird nicht wahrgenommen. Ampeln/Warnhinweise wirken dunkelgrau.", 
-        tip: "Achtung bei Korrekturen (Roter Stift ist schwer lesbar). Rot nicht als Signalfarbe an der Tafel nutzen." 
-    },
-    deuteranopia: { 
-        title: "Deuteranopie (Grün-Blind)", 
-        text: "Rot und Grün sind schwer zu unterscheiden. Relevant für Landkarten.", 
-        tip: "Farbige Kreide an der Tafel vermeiden (Kontrast zu Grün/Grau schlecht). Landkarten beschriften statt färben." 
-    },
-    tritanopia: { 
-        title: "Tritanopie (Blau-Blind)", 
-        text: "Blau und Gelb werden verwechselt. Selten.", 
-        tip: "Farbcodierungen in Unterrichtsmaterialien prüfen (nicht Gelb auf Weiß oder Blau auf Grün)." 
-    }
+    // Farbe  
+    achromatopsia: {  
+        title: "Achromatopsie",  
+        text: "Totale Farbenblindheit. Oft verbunden mit hoher Lichtempfindlichkeit.",  
+        tip: "Niemals Informationen nur über Farbe codieren! Immer Muster, Worte oder Beschriftungen nutzen (z.B. in Diagrammen)."  
+    },  
+    protanopia: {  
+        title: "Protanomalie/Protanopie (Rot-Schwäche/-Blindheit)",  
+        text: "Rot wird nicht wahrgenommen. Ampeln/Warnhinweise wirken dunkelgrau.",  
+        tip: "Achtung bei Korrekturen (Roter Stift ist schwer lesbar). Rot nicht als Signalfarbe an der Tafel nutzen."  
+    },  
+    deuteranopia: {  
+        title: "Deuteranomalie/Deuteranopie (Grün-Schwäche/-Blindheit)",  
+        text: "Rot und Grün sind schwer zu unterscheiden. Relevant für Landkarten.",  
+        tip: "Farbige Kreide an der Tafel vermeiden (Kontrast zu Grün/Grau schlecht). Landkarten beschriften statt färben."  
+    },  
+    tritanopia: {  
+        title: "Tritanomalie/Tritanopie (Blau-Schwäche/-Blindheit)",  
+        text: "Blau und Gelb werden verwechselt. Sehr Selten.",  
+        tip: "Farbcodierungen in Unterrichtsmaterialien prüfen (nicht Gelb auf Weiß oder Blau auf Grün)."  
+    }  
 };
 
 // Einstellungen
@@ -538,6 +553,14 @@ function updateAvatarUI() {
     const btnAnalysis = document.getElementById('btn-toggle-analysis');
     const settingsPanel = document.getElementById('vision-settings-panel');
     const btnExit = document.getElementById('btn-exit-simulation');
+    
+    // NEU: Sidebar Referenz
+    const leftSidebar = document.querySelector('.sidebar');
+
+    // FIX: Linke Sidebar ausblenden, wenn im Simulations-Modus
+    if (leftSidebar) {
+        leftSidebar.style.display = modeActive ? 'none' : 'flex';
+    }
 
     // FIX: Wizard-Button deaktivieren
     const wizBtn = document.querySelector('button[onclick="app.runWizard()"]');
@@ -640,7 +663,7 @@ window.app.setSimulationMode = function(mode) {
 window.app.updateVisionEffects = function() {
     const isFP = isFirstPersonActive();
     
-    // 1. Reset Classes
+    // 1. Reset Classes (Alle "sim-" Klassen entfernen)
     document.body.className = document.body.className.replace(/\bsim-\S+/g, "");
     if(scene.fog) scene.fog.density = 0;
 
@@ -654,6 +677,21 @@ window.app.updateVisionEffects = function() {
     const visusSelect = document.getElementById('vision-select-right');
     if(visusSelect) visusSelect.value = currentVisionSeverity;
 
+    // NEU: Slider Wert holen
+    const severitySlider = document.getElementById('sim-severity');
+    let severityLevel = severitySlider ? severitySlider.value : "2";
+
+    // NEU: Slider nur einblenden, wenn eine Simulation aktiv ist (die Stufen unterstützt)
+    // FIX: strabismus und amblyopia aus dem Array entfernt, damit der Slider angezeigt wird!
+    const sliderContainer = document.getElementById('sim-severity-container');
+    if (sliderContainer) {
+        if (currentSimulationMode !== 'none' && !['protanopia', 'deuteranopia', 'tritanopia', 'achromatopsia'].includes(currentSimulationMode)) {
+            sliderContainer.style.display = 'block';
+        } else {
+            sliderContainer.style.display = 'none';
+        }
+    }
+
     // ABBRUCH wenn nicht FP
     if (!isFP) { return; }
 
@@ -666,9 +704,10 @@ window.app.updateVisionEffects = function() {
         case 'blind': document.body.classList.add('sim-blind'); fogDensity = 0.6; break;
     }
 
-    // 5. Simulation anwenden (Dropdown)
+    // 5. Simulation & Schweregrad anwenden
     if (currentSimulationMode !== 'none') {
         document.body.classList.add('sim-' + currentSimulationMode);
+        document.body.classList.add('sim-lvl-' + severityLevel); // Fügt z.B. sim-lvl-2 hinzu
     }
 
     // 6. GLOSSAR & TIPP UPDATE
@@ -689,7 +728,6 @@ window.app.updateVisionEffects = function() {
         gTitle.innerText = glossInfo.title;
         gText.innerText = glossInfo.text;
         
-        // Tipp anzeigen, wenn vorhanden und nicht "normal"
         if (glossInfo.tip && glossInfo.tip.length > 0) {
             gTipBox.style.display = 'block';
             gTipText.innerText = glossInfo.tip;
@@ -884,48 +922,52 @@ window.app.toggleSettings = function() {
 
 window.app.updateSettings = function() {
     const home = document.getElementById('homescreen');
-    // Wir prüfen, ob wir gerade auf dem Homescreen sind
     const isHomeVisible = home && home.style.display !== 'none';
 
-    // Helper: Synchronisiert Werte zwischen Homescreen (Start) und App-Settings (Set)
-    // Gewinnt immer der Schalter, der gerade sichtbar ist.
     const syncVal = (idApp, idHome, type='check') => {
         const elApp = document.getElementById(idApp);
         const elHome = document.getElementById(idHome);
         
-        if (!elApp || !elHome) return false;
-
+        // FIX: Wenn das App-Element fehlt, Abbruch.
+        if (!elApp) return false;
+        
+        // FIX: Wenn das Homescreen-Element (z.B. start-controls) im neuen Design nicht existiert,
+        // nehmen wir einfach den Wert direkt aus dem Einstellungs-Menü der App!
         let val;
+        if (!elHome) {
+            val = type === 'check' ? elApp.checked : elApp.value;
+            return val;
+        }
         
         if (isHomeVisible) {
-            // Wir sind auf dem Homescreen -> Homescreen ist der Boss
             val = type === 'check' ? elHome.checked : elHome.value;
-            // Wert auf App-Element übertragen
             if (type === 'check') elApp.checked = val; else elApp.value = val;
         } else {
-            // Wir sind in der App -> App-Settings sind der Boss
             val = type === 'check' ? elApp.checked : elApp.value;
-            // Wert auf Homescreen-Element übertragen (für Rückkehr)
             if (type === 'check') elHome.checked = val; else elHome.value = val;
         }
         return val;
     };
 
-    // 1. Werte synchronisieren & abrufen
+    // Jetzt funktioniert das Einlesen wieder korrekt!
     settings.controlsEnabled = syncVal('set-controls', 'start-controls');
     settings.mouseSensitivity = parseFloat(syncVal('set-rotate-speed', 'start-rotate-speed', 'val')) || 1.0;
     settings.reducedMotion = syncVal('set-reduced-motion', 'start-reduced-motion');
     const highContrast = syncVal('set-high-contrast', 'start-high-contrast');
-    const filterVal = syncVal('set-color-filter', 'start-color-filter', 'val') || 'none';
 
-    // 2. CSS Klassen anwenden
     document.body.className = document.body.className.replace(/filter-\w+/g, ''); 
     document.body.classList.remove('high-contrast');
     
-    if(highContrast) document.body.classList.add('high-contrast');
-    if(filterVal !== 'none') document.body.classList.add('filter-' + filterVal);
+    if(highContrast) {
+        document.body.classList.add('high-contrast');
+    }
     
     app.updateVisionEffects();
+
+    // Radikale Hochkontrast-Umschaltung für alle 3D Objekte
+    if (window.app.applyHighContrast3D) {
+        window.app.applyHighContrast3D(highContrast);
+    }
 
     if(!isFirstPersonActive()) {
         controls.rotateSpeed = settings.mouseSensitivity;
@@ -933,7 +975,7 @@ window.app.updateSettings = function() {
         controls.enableDamping = !settings.reducedMotion;
     }
     
-    // 3. On-Screen Controls Sichtbarkeit
+    // Hier ist auch die Logik, die die Controls während der Simulation ausblendet
     const osc = document.getElementById('onscreen-controls');
     if(osc) {
         const simActive = isFirstPersonActive() || isVisionAnalysisMode;
@@ -945,6 +987,48 @@ window.app.updateSettings = function() {
              osc.style.display = 'none';
         }
     }
+};
+
+window.app.applyHighContrast3D = function(isActive) {
+    // Harte Monochrom-Werte
+    const COLOR_ROOM = 0xeeeeee; // Sehr helles Grau für den Raum
+    const COLOR_FURN = 0x111111; // Fast Schwarz für alle Möbel
+
+    const applyColor = (mesh, isRoom) => {
+        if (!mesh) return;
+        mesh.traverse(child => {
+            // WICHTIG: Nur sichtbare Meshes einfärben! Unsichtbare Hitboxen ignorieren.
+            if (child.isMesh && child.material && child.material.visible !== false) {
+                
+                // 1. Original-Material einmalig dauerhaft sichern
+                if (!child.userData.origMaterial) {
+                    child.userData.origMaterial = child.material;
+                }
+
+                if (!isActive) {
+                    // 2. Hochkontrast AUS: Zurück zum Original-Material (Texturen sind wieder da)
+                    child.material = child.userData.origMaterial;
+                } else {
+                    // 3. Hochkontrast AN: Komplett sauberes, neues Material erzwingen!
+                    const colorHex = isRoom ? COLOR_ROOM : COLOR_FURN;
+                    child.material = new THREE.MeshStandardMaterial({
+                        color: colorHex,
+                        roughness: 0.9,   // Wenig Glanz (verhindert irritierende Reflektionen)
+                        metalness: 0.05,
+                        side: THREE.DoubleSide
+                    });
+                }
+            }
+        });
+    };
+
+    // 1. Raum überschreiben
+    applyColor(currentRoomMesh, true);
+
+    // 2. Radikal ALLE Möbel in der Szene überschreiben
+    movableObjects.forEach(obj => {
+        applyColor(obj, false);
+    });
 };
 
 window.app.setFontScale = function(delta) {
@@ -1094,6 +1178,10 @@ function calcRows(count, lx, lz) {
     const cols = Math.floor(((lx * 2) - 0.4) / itemWidth); 
     if(cols < 1) return null; 
     let res = []; 
+    
+    // Tafel mittig an die vordere Wand setzen (-Z Achse ist die Blickrichtung der Stühle)
+    res.push({id: 'board', x: 0, z: -lz + 0.1, r: 0});
+    
     const startX = -(cols * itemWidth) / 2 + (itemWidth/2); 
     const startZ = -(Math.ceil(count/cols) * itemDepth) / 2 + (itemDepth/2); 
     for(let i=0; i<count; i++) { 
@@ -1133,6 +1221,10 @@ function calcExam(count, lx, lz) {
     const cols = Math.floor((lx * 2) / itemWidth); 
     if(cols < 1) return null; 
     let res = []; 
+    
+    // Tafel mittig an die vordere Wand setzen
+    res.push({id: 'board', x: 0, z: -lz + 0.1, r: 0});
+    
     const startX = -(cols * itemWidth) / 2 + (itemWidth/2); 
     const startZ = -lz + 1.5; 
     for(let i=0; i<count; i++) { 
@@ -1190,11 +1282,17 @@ window.app.runWizard = async function() {
     
     app.clearRoom(false); 
     
-    // Sicherstellen, dass das benötigte Asset geladen ist
-    const typeId = pending[0].id;
-    if (!ASSETS.furniture[typeId].data) { 
+    // Sicherstellen, dass ALLE benötigten Assets (z.B. Tische UND Tafel) geladen sind
+    const uniqueTypes = [...new Set(pending.map(p => p.id))];
+    let needsLoading = uniqueTypes.some(type => !ASSETS.furniture[type].data);
+    
+    if (needsLoading) {
         toggleLoader(true, "Lade Möbel..."); 
-        await getOrLoadFurniture(typeId); 
+        for (let type of uniqueTypes) {
+            if (!ASSETS.furniture[type].data) {
+                await getOrLoadFurniture(type);
+            }
+        }
         toggleLoader(false); 
     }
     
@@ -1280,6 +1378,85 @@ window.app.checkAccessibility = function() {
     html += `<p style="font-size:11px; color:#888;">Hinweis: Schätzung basierend auf Möbelanzahl und Raumgröße.</p>`;
 
     showModal("Barrierefreiheit & Akustik", html);
+};
+
+window.app.checkAccessibility = function() {
+    const stats = getAccessibilityStats();
+    if(stats.count < 1) { showModal("Barrierefreiheit & Akustik", "Raum ist leer."); return; }
+
+    let statusClass = stats.minCm < 70 ? "bad" : (stats.minCm < 90 ? "warn" : "good");
+    let statusText = stats.minCm < 70 ? "Kritisch (<70cm)" : (stats.minCm < 90 ? "Akzeptabel (70-90cm)" : "Sehr gut (>90cm)");
+    
+    let acClass = "bad";
+    let acText = "Viel Hall (Schlecht für Hörgeräte)";
+    
+    if(stats.acousticScore > stats.targets.warn) { acClass = "warn"; acText = "Akzeptabel (Mittel)"; }
+    if(stats.acousticScore > stats.targets.good) { acClass = "good"; acText = "Gut gedämpft"; }
+
+    let html = `<h4>Rollstuhlfreiheit</h4>
+                <div class="report-item ${statusClass}"><span>Engster Durchgang:</span><span class="report-val">${stats.minCm} cm</span><div style="font-size:11px; opacity:0.8">${statusText}</div></div>`;
+    
+    if(stats.wallIssues > 0) {
+        html += `<div class="report-item warn"><span>Möbel ungünstig an Wand:</span><span class="report-val">${stats.wallIssues}</span><div style="font-size:11px; opacity:0.8">Abstand zu klein für Durchgang aber nicht bündig.</div></div>`;
+    }
+    
+    html += `<h4 style="margin-top:20px;">Akustik (Prognose)</h4>
+             <div class="report-item ${acClass}"><span>Hörsamkeit:</span><div style="font-size:11px; opacity:0.8; margin-top:5px;">${acText}</div></div>`;
+    
+    if(acClass === "bad" || acClass === "warn") {
+        html += `<div class="report-item" style="border-left-color:#336699; background:rgba(51, 102, 153, 0.1);"><span>Tipp:</span><div style="font-size:11px; opacity:0.8">Nutzen Sie Teppiche, Trennwände oder Wandabsorber (unter "Einzelmöbel & Ausstattung"), um die Akustik zu verbessern.</div></div>`;
+    }
+
+    html += `<p style="font-size:11px; color:#888;">Hinweis: Schätzung basierend auf Möbelanzahl und Raumgröße.</p>`;
+
+    showModal("Barrierefreiheit & Akustik", html);
+};
+
+// --- NEUER BLOCK: LITERATUR & QUELLEN ---
+// --- NEUER BLOCK: LITERATUR & QUELLEN ---
+window.app.showReferences = function() {
+    const linkStyle = "color: #3b82f6; text-decoration: none; border-bottom: 1px dotted #3b82f6;";
+    const detailsStyle = "margin-bottom: 10px; background: rgba(255,255,255,0.03); border: 1px solid #374151; border-radius: 6px; padding: 10px;";
+    const summaryStyle = "color: #e5e7eb; font-size: 13px; font-weight: 700; cursor: pointer; outline: none;";
+    const pStyle = "font-size: 11px; color: #9ca3af; margin-bottom: 8px; line-height: 1.5; padding-left: 10px; text-indent: -10px; margin-top: 10px;";
+
+    const html = `
+        <div style="max-height: 60vh; overflow-y: auto; padding-right: 10px;">
+            <p style="font-size: 12px; color: #d1d5db; margin-bottom: 15px;">Die fachlichen Informationen und pädagogischen Hinweise in diesem Tool basieren auf folgenden Quellen:</p>
+            
+            <div style="background: rgba(245, 158, 11, 0.1); border-left: 3px solid #f59e0b; padding: 10px; margin-bottom: 20px; font-size: 11px; color: #d1d5db; border-radius: 0 4px 4px 0;">
+                <strong style="color: #f59e0b; display: block; margin-bottom: 4px;">Grenzen der Simulation:</strong>
+                Eine Simulation repliziert nicht die tatsächliche Lebensrealität. Sehende Personen haben stets den Vorteil, auf visuelle Erinnerungen und Vorerfahrungen zurückgreifen zu können. Diese Filter dienen dem Aufbau von Empathie und Verständnis, nicht der exakten medizinischen Nachbildung.
+            </div>
+            
+            <details style="${detailsStyle}">
+                <summary style="${summaryStyle}">Spezifische Krankheitsbilder</summary>
+                <div style="${pStyle}"><strong>Retinopathie (ROP):</strong> Akman, S. H., Pfeil, J. M., et al. (2021). Epidemiology and treatment of retinopathy of prematurity: The Hannover Data in Retina.net ROP registry from 2001-2017. <em>Ophthalmologie</em> 119 (5), S. 497–505.</div>
+                <div style="${pStyle}"><strong>Retinopathie (ROP):</strong> Hübler, A. & Dawczynski, J. (2010). Retinopathia praematurorum. In: Gerhard, J. & Hübler, A. (Hrsg.) <em>Neonatologie: Die Medizin des Früh- und Reifgeborenen.</em> Stuttgart: Georg Thieme Verlag KG.</div>
+                <div style="${pStyle}"><strong>CVI:</strong> Bennett, R. & Baskin, K. (2026). <em>When to Suspect CVI.</em> Perkins School for the Blind. <br><a href="https://www.perkins.org/when-to-suspect-cvi-guide/" target="_blank" style="${linkStyle}">Online lesen</a></div>
+                <div style="${pStyle}"><strong>CVI:</strong> National Eye Institute (2024). <em>Cerebral Visual Impairment (CVI).</em> <br><a href="https://www.nei.nih.gov/eye-health-information/eye-conditions-and-diseases/cerebral-visual-impairment-cvi" target="_blank" style="${linkStyle}">Online lesen</a></div>
+                <div style="${pStyle}"><strong>Glaukom:</strong> Universitätsspital Zürich (2021/2025). <em>Kongenitales und juveniles Glaukom.</em> <br><a href="https://www.usz.ch/krankheit/kongenitales-und-juveniles-glaukom/" target="_blank" style="${linkStyle}">Online lesen</a></div>
+            </details>
+
+            <details style="${detailsStyle}">
+                <summary style="${summaryStyle}">Allgemeine Augenheilkunde & Epidemiologie</summary>
+                <div style="${pStyle}">Bundesinstitut für Öffentliche Gesundheit (2025). <em>Sehstörungen bei Kindern erkennen.</em> <br><a href="https://www.kindergesundheit-info.de/themen/entwicklung/entwicklungsschritte/sehvermoegen/sehstoerungen/" target="_blank" style="${linkStyle}">Online lesen</a></div>
+                <div style="${pStyle}">Dube, M., et al. (2024). Prevalence and Pattern of Ocular Diseases Among Children Aged 7-14 Years Visiting a Tertiary Care Teaching Hospital in Central India. <em>Cureus</em> 16 (8), e66383.</div>
+                <div style="${pStyle}">Grehn, F. (1968/2006). <em>Augenheilkunde.</em> Heidelberg: Springer Medizin Verlag.</div>
+                <div style="${pStyle}">Jeong, Y. D., et al. (2025). Global Prevalence of Congenital Color Vision Deficiency among Children and Adolescents, 1932-2022. <em>Ophthalmology</em>, 132(12), 1431–1444.</div>
+                <div style="${pStyle}">Schmidtke, C., et al. (2018). Inanspruchnahme der Früherkennungsuntersuchungen für Kinder in Deutschland – Querschnittergebnisse aus KiGGS Welle 2. <em>Journal of Health Monitoring</em> 3 (4), S. 68–77. Berlin: RKI.</div>
+                <div style="${pStyle}">Turbert, D. (2024). <em>Childhood Eye Diseases and Conditions.</em> American Academy of Ophthalmology. <br><a href="https://www.aao.org/eye-health/tips-prevention/common-childhood-diseases-conditions" target="_blank" style="${linkStyle}">Online lesen</a></div>
+                <div style="${pStyle}">Vaughan, D. & Asbury, T. (1983). <em>Ophthalmologie: Diagnose und Therapie in der Praxis.</em> Berlin/Heidelberg/New York/Tokyo: Springer-Verlag.</div>
+            </details>
+
+            <details style="${detailsStyle}">
+                <summary style="${summaryStyle}">Didaktik & Simulation</summary>
+                <div style="${pStyle}">Willings, C. (2025). <em>Simulation Activities.</em> teachingvisuallyimpaired.com.</div>
+            </details>
+        </div>
+    `;
+    
+    showModal("Literaturverzeichnis", html);
 };
 
 // === SAVE & LOAD & PDF ===
@@ -1714,6 +1891,14 @@ function setupRoom(model, filename) {
   updateObjectList();
   window.app.setCamera('top');
   historyStack = [];
+  
+  // NEU: Wenn Hochkontrast-Modus an ist, sofort den neuen Raum überschreiben
+  if (window.app.applyHighContrast3D) {
+      const highContrastToggle = document.getElementById('set-high-contrast');
+      if (highContrastToggle && highContrastToggle.checked) {
+          window.app.applyHighContrast3D(true);
+      }
+  }
 }
 
 function toggleLoader(show, text) {
@@ -1765,11 +1950,8 @@ function createFurnitureInstance(typeId, x, z, rotY) {
         if(info.noShadow) { visual.castShadow = false; } else { visual.castShadow = true; }
         visual.receiveShadow = true;
         
-        // FIX für Teppich und prozedurale Elemente (Höhe beachten)
-        // Wenn yOffset definiert, nutze diesen relativ zum Boden, sonst halbe Höhe + Offset
         let visualY = info.dims.y / 2;
         if(typeId === 'carpet_proc') {
-             // Teppich explizit höher legen gegen Z-Fighting
              visualY += 0.005;
         }
         visual.position.y = visualY; 
@@ -1778,6 +1960,24 @@ function createFurnitureInstance(typeId, x, z, rotY) {
         if (!info.data) return; 
         visual = info.data.clone();
         disableCullingRecursively(visual);
+        
+        // NEU: Farblosen Möbeln standardmäßig eine edle dunkle Farbe geben
+        const colorlessFurniture = [
+            'table_square', 'table_double', 'sofa', 'board', 'teacher', 
+            'cupboard', 'cabinet_short', 'cabinet_long'
+        ];
+        
+        if (colorlessFurniture.includes(typeId)) {
+            visual.traverse(child => {
+                if (child.isMesh && child.material) {
+                    // Material klonen, damit wir es unabhängig einfärben können
+                    child.material = child.material.clone(); 
+                    // Edles, tiefes Schieferblau/Anthrazit setzen
+                    child.material.color.setHex(0x2c3e50); 
+                }
+            });
+        }
+
         const box = new THREE.Box3().setFromObject(visual);
         const center = new THREE.Vector3(); box.getCenter(center);
         visual.position.x = -center.x; visual.position.y = -box.min.y; visual.position.z = -center.z;
@@ -1798,7 +1998,6 @@ function createFurnitureInstance(typeId, x, z, rotY) {
     hitbox.userData = { root: wrapper };
     wrapper.add(hitbox);
 
-    // FIX für Laptop & Wandobjekte
     const yPos = info.yOffset !== undefined ? info.yOffset : FURNITURE_Y_OFFSET;
     
     wrapper.position.set(x, yPos, z); 
@@ -1811,6 +2010,14 @@ function createFurnitureInstance(typeId, x, z, rotY) {
     
     updateSeatCount(); 
     updateObjectList();
+    
+    // Hochkontrast-Modus auf das neue Möbelstück anwenden (falls aktiv)
+    if (window.app.applyHighContrast3D) {
+        const highContrastToggle = document.getElementById('set-high-contrast');
+        if (highContrastToggle && highContrastToggle.checked) {
+            window.app.applyHighContrast3D(true);
+        }
+    }
 }
 
 // === EVENTS ===

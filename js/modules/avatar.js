@@ -119,6 +119,8 @@ export function toggleAvatar(scene, movableObjects, interactionMeshes) {
 
     // --- Metadaten ---
     group.position.set(0, 0, 0); 
+    // Drehung um 180 Grad (Pi), damit die Ich-Perspektive sofort nach vorne zur Tafel blickt
+    group.rotation.y = Math.PI; 
     group.userData = { 
         typeId: 'avatar_procedural', 
         isAvatar: true, 

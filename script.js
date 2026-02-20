@@ -1413,15 +1413,16 @@ window.app.checkAccessibility = function() {
 };
 
 // --- NEUER BLOCK: LITERATUR & QUELLEN ---
-// --- NEUER BLOCK: LITERATUR & QUELLEN ---
 window.app.showReferences = function() {
     const linkStyle = "color: #3b82f6; text-decoration: none; border-bottom: 1px dotted #3b82f6;";
     const detailsStyle = "margin-bottom: 10px; background: rgba(255,255,255,0.03); border: 1px solid #374151; border-radius: 6px; padding: 10px;";
-    const summaryStyle = "color: #e5e7eb; font-size: 13px; font-weight: 700; cursor: pointer; outline: none;";
+    // FIX: Die Überschriften der Dropdowns sollen NICHT markierbar sein (verhindert Flackern beim Klicken)
+    const summaryStyle = "color: #e5e7eb; font-size: 13px; font-weight: 700; cursor: pointer; outline: none; user-select: none; -webkit-user-select: none;";
     const pStyle = "font-size: 11px; color: #9ca3af; margin-bottom: 8px; line-height: 1.5; padding-left: 10px; text-indent: -10px; margin-top: 10px;";
 
+    // FIX: Dem Haupt-Container wurde 'user-select: text !important' und 'cursor: text' hinzugefügt
     const html = `
-        <div style="max-height: 60vh; overflow-y: auto; padding-right: 10px;">
+        <div style="max-height: 60vh; overflow-y: auto; padding-right: 10px; user-select: text !important; -webkit-user-select: text !important; cursor: text;">
             <p style="font-size: 12px; color: #d1d5db; margin-bottom: 15px;">Die fachlichen Informationen und pädagogischen Hinweise in diesem Tool basieren auf folgenden Quellen:</p>
             
             <div style="background: rgba(245, 158, 11, 0.1); border-left: 3px solid #f59e0b; padding: 10px; margin-bottom: 20px; font-size: 11px; color: #d1d5db; border-radius: 0 4px 4px 0;">
@@ -1451,6 +1452,14 @@ window.app.showReferences = function() {
 
             <details style="${detailsStyle}">
                 <summary style="${summaryStyle}">Didaktik & Simulation</summary>
+                <div style="${pStyle}">Capovilla, D. & Gebhardt, M. (2016). Assistive Technologien für Menschen mit Sehschädigung im inklusiven Unterricht. <em>Zeitschrift für Heilpädagogik</em> (1), S. 4–15. Würzburg: Verband Sonderpädagogik e.V.</div>
+                <div style="${pStyle}">
+                    <strong>⭐ Degenhardt, S., Gewinn, W. & Schütt, M.-L. (2016).</strong> <em>Spezifisches Curriculum für Menschen mit Blindheit und Sehbehinderung.</em> Norderstedt: Books on Demand GmbH.<br>
+                    <span style="color: #3b82f6; font-size: 10px;">➔ Beschreibt einen spezifischen Lehrplan und dient als zentrale didaktische Grundlage.</span>
+                </div>
+                <div style="${pStyle}">Krug, F.-K. (2001). Grundlagen einer Didaktik für Sehbehinderte. In: F.-K. Krug (Hrsg.), <em>Didaktik für den Unterricht mit sehbehinderten Schülern</em>, S. 15-26. Stuttgart: Ernst Reinhardt Verlag.</div>
+                <div style="${pStyle}">Lang, M. (2024). Förderschwerpunkt Sehen: Pädagogik bei Blindheit und Sehbeeinträchtigung. In: E. Kiel & S. Weiß (Hrsg.), <em>Inklusive Didaktik für die Regelschule: Eine Einführung für Studium und Praxis</em>, S. 49-66. Bad Heilbrunn: Julius Klinkhardt.</div>
+                <div style="${pStyle}">Lang, M. & Thiele, M. (2020). <em>Schüler mit Sehbehinderung und Blindheit im inklusiven Unterricht: Praxistipps für Lehrkräfte.</em> München: Ernst Reinhardt Verlag.</div>
                 <div style="${pStyle}">Willings, C. (2025). <em>Simulation Activities.</em> teachingvisuallyimpaired.com.</div>
             </details>
         </div>

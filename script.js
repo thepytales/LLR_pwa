@@ -573,12 +573,14 @@ function updateAvatarUI() {
     if (btnSpawn) {
         if (avatarExists) {
             btnSpawn.innerText = "Avatar entfernen";
-            btnSpawn.classList.add('danger');
+            btnSpawn.classList.remove('primary'); // Verhindert blauen Glow
+            btnSpawn.classList.add('danger', 'solid'); // Echtes Rot
             btnSpawn.disabled = modeActive; 
             btnSpawn.style.opacity = modeActive ? "0.3" : "1";
         } else {
             btnSpawn.innerText = "Avatar setzen";
-            btnSpawn.classList.remove('danger');
+            btnSpawn.classList.remove('danger', 'solid');
+            btnSpawn.classList.add('primary'); // Zurück zum originalen Blau
             btnSpawn.disabled = false;
             btnSpawn.style.opacity = "1";
         }
@@ -1122,7 +1124,16 @@ window.app.addFurniture = async function (typeId) {
     
     createFurnitureInstance(typeId, 0, 0, 0); 
     document.body.style.cursor = 'default'; 
-    setTimeout(() => { const lastObj = movableObjects[movableObjects.length-1]; if(lastObj) selectObject(lastObj); }, 50); 
+    
+    // FIX: Setzt das neu erstellte Objekt zwingend ins selectedObjects Array!
+    setTimeout(() => { 
+        const lastObj = movableObjects[movableObjects.length-1]; 
+        if(lastObj) { 
+            deselectObject(); 
+            selectedObjects = [lastObj]; 
+            selectObject(lastObj); 
+        } 
+    }, 50); 
 };
 
 window.app.clearRoom = function(doSave=true) { 
@@ -1361,53 +1372,21 @@ window.app.checkAccessibility = function() {
     if(stats.acousticScore > stats.targets.warn) { acClass = "warn"; acText = "Akzeptabel (Mittel)"; }
     if(stats.acousticScore > stats.targets.good) { acClass = "good"; acText = "Gut gedämpft"; }
 
-    let html = `<h4>Rollstuhlfreiheit</h4>
-                <div class="report-item ${statusClass}"><span>Engster Durchgang:</span><span class="report-val">${stats.minCm} cm</span><div style="font-size:11px; opacity:0.8">${statusText}</div></div>`;
+    let html = `<h4 style="color: #ffffff; margin-top: 0; margin-bottom: 15px;">Rollstuhlfreiheit</h4>
+                <div class="report-item ${statusClass}"><span>Engster Durchgang:</span><span class="report-val">${stats.minCm} cm</span><div style="font-size:12px; color:#e5e7eb; margin-top:6px;">${statusText}</div></div>`;
     
     if(stats.wallIssues > 0) {
-        html += `<div class="report-item warn"><span>Möbel ungünstig an Wand:</span><span class="report-val">${stats.wallIssues}</span><div style="font-size:11px; opacity:0.8">Abstand zu klein für Durchgang aber nicht bündig.</div></div>`;
+        html += `<div class="report-item warn"><span>Möbel ungünstig an Wand:</span><span class="report-val">${stats.wallIssues}</span><div style="font-size:12px; color:#e5e7eb; margin-top:6px;">Abstand zu klein für Durchgang, aber nicht bündig an der Wand.</div></div>`;
     }
     
-    html += `<h4 style="margin-top:20px;">Akustik (Prognose)</h4>
-             <div class="report-item ${acClass}"><span>Hörsamkeit:</span><div style="font-size:11px; opacity:0.8; margin-top:5px;">${acText}</div></div>`;
+    html += `<h4 style="color: #ffffff; margin-top:25px; margin-bottom: 15px;">Akustik (Prognose)</h4>
+             <div class="report-item ${acClass}"><span>Hörsamkeit:</span><div style="font-size:13px; color:#ffffff; font-weight:600; margin-top:6px;">${acText}</div></div>`;
     
     if(acClass === "bad" || acClass === "warn") {
-        html += `<div class="report-item" style="border-left-color:#336699; background:rgba(51, 102, 153, 0.1);"><span>Tipp:</span><div style="font-size:11px; opacity:0.8">Nutzen Sie Teppiche, Trennwände oder Wandabsorber (unter "Einzelmöbel & Ausstattung"), um die Akustik zu verbessern.</div></div>`;
+        html += `<div class="report-item" style="border-left-color:var(--primary); background:rgba(59, 130, 246, 0.15);"><span>Tipp:</span><div style="font-size:12px; color:#e5e7eb; margin-top:6px; line-height: 1.5;">Nutzen Sie Teppiche, Trennwände oder Wandabsorber (unter "Einzelmöbel & Ausstattung"), um die Akustik zu verbessern.</div></div>`;
     }
 
-    html += `<p style="font-size:11px; color:#888;">Hinweis: Schätzung basierend auf Möbelanzahl und Raumgröße.</p>`;
-
-    showModal("Barrierefreiheit & Akustik", html);
-};
-
-window.app.checkAccessibility = function() {
-    const stats = getAccessibilityStats();
-    if(stats.count < 1) { showModal("Barrierefreiheit & Akustik", "Raum ist leer."); return; }
-
-    let statusClass = stats.minCm < 70 ? "bad" : (stats.minCm < 90 ? "warn" : "good");
-    let statusText = stats.minCm < 70 ? "Kritisch (<70cm)" : (stats.minCm < 90 ? "Akzeptabel (70-90cm)" : "Sehr gut (>90cm)");
-    
-    let acClass = "bad";
-    let acText = "Viel Hall (Schlecht für Hörgeräte)";
-    
-    if(stats.acousticScore > stats.targets.warn) { acClass = "warn"; acText = "Akzeptabel (Mittel)"; }
-    if(stats.acousticScore > stats.targets.good) { acClass = "good"; acText = "Gut gedämpft"; }
-
-    let html = `<h4>Rollstuhlfreiheit</h4>
-                <div class="report-item ${statusClass}"><span>Engster Durchgang:</span><span class="report-val">${stats.minCm} cm</span><div style="font-size:11px; opacity:0.8">${statusText}</div></div>`;
-    
-    if(stats.wallIssues > 0) {
-        html += `<div class="report-item warn"><span>Möbel ungünstig an Wand:</span><span class="report-val">${stats.wallIssues}</span><div style="font-size:11px; opacity:0.8">Abstand zu klein für Durchgang aber nicht bündig.</div></div>`;
-    }
-    
-    html += `<h4 style="margin-top:20px;">Akustik (Prognose)</h4>
-             <div class="report-item ${acClass}"><span>Hörsamkeit:</span><div style="font-size:11px; opacity:0.8; margin-top:5px;">${acText}</div></div>`;
-    
-    if(acClass === "bad" || acClass === "warn") {
-        html += `<div class="report-item" style="border-left-color:#336699; background:rgba(51, 102, 153, 0.1);"><span>Tipp:</span><div style="font-size:11px; opacity:0.8">Nutzen Sie Teppiche, Trennwände oder Wandabsorber (unter "Einzelmöbel & Ausstattung"), um die Akustik zu verbessern.</div></div>`;
-    }
-
-    html += `<p style="font-size:11px; color:#888;">Hinweis: Schätzung basierend auf Möbelanzahl und Raumgröße.</p>`;
+    html += `<p style="font-size:11px; color:#9ca3af; margin-top: 25px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">Hinweis: Schätzung basierend auf Möbelanzahl und Raumgröße.</p>`;
 
     showModal("Barrierefreiheit & Akustik", html);
 };

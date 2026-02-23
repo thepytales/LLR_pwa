@@ -220,11 +220,11 @@
       .big-btn.highlight {
           background: linear-gradient(135deg, var(--primary) 0%, #2563eb 100%);
           border: 1px solid rgba(255,255,255,0.2);
-          box-shadow: 0 10px 25px -5px var(--primary-glow);
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Neutraler Schatten */
       }
       .big-btn.highlight:hover {
           transform: translateY(-2px);
-          box-shadow: 0 15px 35px -5px var(--primary-glow);
+          box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4); /* Neutraler Schatten */
       }
 
       /* Secondary Button Hover */
@@ -299,116 +299,196 @@
       }
 
       /* === REST CSS (UI & MODALS) === */
+      
+      /* Universelle Scrollbar (Sleek) */
+      ::-webkit-scrollbar { width: 6px; height: 6px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
+      ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
+
       .top-bar {
-        background: var(--bg-panel); height: 50px;
-        display: flex; align-items: center; padding: 0 15px;
-        border-bottom: 1px solid var(--border); pointer-events: auto;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3); gap: 10px;
+        background: rgba(26, 27, 30, 0.75); 
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        height: 56px;
+        display: flex; align-items: center; padding: 0 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08); 
+        pointer-events: auto;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.4); gap: 12px;
         z-index: 50; 
       }
-      .brand { font-weight: 700; color: white; margin-right: 15px; letter-spacing: 0.5px; }
-      .separator { width: 1px; height: 20px; background: var(--border); margin: 0 5px; }
+      .brand { font-weight: 800; color: white; margin-right: 15px; letter-spacing: 0.5px; font-size: 15px; }
+      .separator { width: 1px; height: 24px; background: rgba(255,255,255,0.1); margin: 0 5px; }
       .spacer { flex-grow: 1; }
 
-      select, button {
-        background: var(--btn-bg); color: var(--text-light); border: 1px solid var(--border);
+      /* Zurück zum Original-Design für Selects (Stabilität & kein Flackern) */
+      select {
+        background: #27272a; color: #f3f4f6; border: 1px solid #2c2e33;
         padding: 6px 12px; border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 13px;
-        transition: all 0.2s; outline: none; white-space: nowrap;
+        outline: none; white-space: nowrap;
       }
-      select:hover, button:hover { background: #3f3f46; border-color: #555; }
+      select:hover { background: #3f3f46; border-color: #555; }
+
+      /* Buttons bleiben modern, aber separat formatiert */
+      button {
+        background: rgba(255, 255, 255, 0.05); color: var(--text-light); 
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 8px 14px; border-radius: 8px; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 500;
+        transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); outline: none; white-space: nowrap;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      button:hover { 
+          background: rgba(255, 255, 255, 0.1); 
+          border-color: rgba(255, 255, 255, 0.2); 
+          transform: translateY(-1px);
+      }
       button:active { transform: translateY(1px); }
-      button:disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+      button:disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; transform: none; }
       
-      button.primary { background: var(--primary); border-color: var(--primary); color: white; }
-      button.primary:hover { background: #2563eb; }
-      button.danger { color: var(--danger); border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.1); }
-      button.danger:hover { background: var(--danger); color: white; }
+      button.primary { 
+          background: linear-gradient(135deg, var(--primary) 0%, #2563eb 100%); 
+          border: 1px solid rgba(255,255,255,0.2); 
+          color: white; 
+          font-weight: 600;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2); /* Neutraler Schatten */
+      }
+      button.primary:hover { 
+          background: linear-gradient(135deg, #4f8ff7 0%, #3b82f6 100%); 
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35); /* Neutraler Schatten */
+      }
+      button.danger { color: #f87171; border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.1); }
+      button.danger:hover { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
       button.danger.solid { background: var(--danger); color: white; border-color: var(--danger); }
+      button.danger.solid:hover { background: #dc2626; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35); /* Neutraler Schatten */ }
       
       button.icon-btn {
-        padding: 6px; display: flex; align-items: center; justify-content: center;
-        background: transparent; border-color: transparent; color: #9ca3af; width: 34px; height: 34px;
+        padding: 8px; display: flex; align-items: center; justify-content: center;
+        background: transparent; border-color: transparent; color: #9ca3af; width: 36px; height: 36px; box-shadow: none;
       }
-      button.icon-btn:hover { background: rgba(255,255,255,0.1); color: white; }
+      button.icon-btn:hover { background: rgba(255,255,255,0.1); color: white; border-color: rgba(255,255,255,0.1); }
       
+      /* Wenn ein Button aktiv ist, wirkt er eingedrückt statt leuchtend */
       button.active { 
         background: var(--primary); border-color: var(--primary); color: white; 
-        box-shadow: 0 2px 8px var(--primary-glow);
+        box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.3); 
       }
 
       /* Sidebars */
-      .sidebar { position: absolute; top: 70px; left: 20px; bottom: 20px; width: 340px; display: flex; flex-direction: column; gap: 10px; pointer-events: none; overflow-y: auto; padding-right: 5px; z-index: 100; }
-      .sidebar-right { position: absolute; top: 70px; right: 20px; bottom: 20px; width: 300px; display: flex; flex-direction: column; gap: 10px; pointer-events: none; overflow-y: auto; padding-left: 5px; z-index: 40; }
-      .sidebar::-webkit-scrollbar, .sidebar-right::-webkit-scrollbar { width: 4px; }
-      .sidebar::-webkit-scrollbar-thumb, .sidebar-right::-webkit-scrollbar-thumb { background: #444; border-radius: 2px; }
+      .sidebar { position: absolute; top: 76px; left: 20px; bottom: 20px; width: 340px; display: flex; flex-direction: column; gap: 12px; pointer-events: none; overflow-y: auto; padding-right: 5px; z-index: 100; }
+      .sidebar-right { position: absolute; top: 76px; right: 20px; bottom: 20px; width: 320px; display: flex; flex-direction: column; gap: 12px; pointer-events: none; overflow-y: auto; padding-left: 5px; z-index: 40; }
       
       .panel {
-        background: var(--bg-panel); border: 1px solid var(--border);
-        border-radius: 8px; pointer-events: auto; overflow: hidden;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.4); flex-shrink: 0;
+        background: rgba(26, 27, 30, 0.65); 
+        backdrop-filter: blur(16px) saturate(180%);
+        -webkit-backdrop-filter: blur(16px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px; pointer-events: auto; overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.4); flex-shrink: 0;
+        transition: all 0.3s ease;
       }
       .panel-header {
-        padding: 12px 15px; font-size: 11px; text-transform: uppercase; 
-        letter-spacing: 1px; color: #9ca3af; font-weight: 700; cursor: pointer;
+        padding: 14px 18px; font-size: 11px; text-transform: uppercase; 
+        letter-spacing: 1.5px; color: #d1d5db; font-weight: 700; cursor: pointer;
         display: flex; justify-content: space-between; align-items: center;
-        background: rgba(255,255,255,0.03); select-none; border-bottom: 1px solid rgba(0,0,0,0.2);
+        background: rgba(255,255,255,0.02); user-select: none; border-bottom: 1px solid rgba(255,255,255,0.05);
+        transition: background 0.2s;
       }
       .panel-header:hover { background: rgba(255,255,255,0.06); color: white; }
-      .panel-header::after { content: '▼'; font-size: 10px; transition: transform 0.3s; }
+      .panel-header::after { content: '▼'; font-size: 10px; transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); opacity: 0.7; }
       .panel.collapsed .panel-header::after { transform: rotate(-90deg); }
-      .panel-content { padding: 15px; transition: max-height 0.3s ease-out; max-height: 600px; overflow-y: auto; overflow-x: hidden; }
-      .panel.collapsed .panel-content { max-height: 0; padding: 0 15px; opacity: 0; }
+      .panel.collapsed .panel-header { border-bottom-color: transparent; }
+      .panel-content { padding: 18px; transition: max-height 0.35s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s ease; max-height: 800px; overflow-y: auto; overflow-x: hidden; opacity: 1; }
+      .panel.collapsed .panel-content { max-height: 0; padding-top: 0; padding-bottom: 0; opacity: 0; pointer-events: none; }
 
       .sidebar-action-btn {
-        background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.3); color: var(--danger);
-        padding: 12px; border-radius: 6px; font-weight: 600; width: 100%;
+        background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171;
+        padding: 14px; border-radius: 10px; font-weight: 600; width: 100%;
         text-transform: uppercase; font-size: 12px; margin-top: 10px; pointer-events: auto;
-        transition: 0.2s;
+        transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+        backdrop-filter: blur(8px);
       }
-      .sidebar-action-btn:hover { background: var(--danger); color: white; }
+      .sidebar-action-btn:hover { background: rgba(239, 68, 68, 0.2); color: white; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15); }
       
       .sidebar-undo-btn {
-        background: transparent; border: 1px solid #4b5563; color: #9ca3af;
-        padding: 8px; border-radius: 6px; font-weight: 600; width: 100%;
+        background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); color: #9ca3af;
+        padding: 10px; border-radius: 8px; font-weight: 600; width: 100%;
         text-transform: uppercase; font-size: 11px; margin-top: 5px; pointer-events: auto;
-        transition: 0.2s;
+        transition: all 0.2s; backdrop-filter: blur(8px);
       }
-      .sidebar-undo-btn:hover { background: #374151; color: white; border-color: #6b7280; }
+      .sidebar-undo-btn:hover { background: rgba(255, 255, 255, 0.08); color: white; border-color: rgba(255, 255, 255, 0.2); transform: translateY(-1px); }
 
-      /* Inputs */
-      .input-group label { display: block; font-size: 12px; margin-bottom: 6px; color: #9ca3af; font-weight: 500; }
+      /* Inputs & Form Controls */
+      .input-group { margin-bottom: 16px; }
+      .input-group:last-of-type { margin-bottom: 0; }
+      
+      .input-group label { 
+          display: block; font-size: 11px; text-transform: uppercase; 
+          letter-spacing: 0.5px; margin-bottom: 8px; color: #9ca3af; font-weight: 600; 
+      }
+      
+      /* Zurück zum stabilen Original-Design für Dropdowns und Inputs */
       .input-group input, .input-group select, .input-group textarea { 
           width: 100%; box-sizing: border-box; background: #0f1012; 
           color: white; border: 1px solid #374151; padding: 8px; border-radius: 6px;
+          font-family: inherit; font-size: 13px;
       }
-      .input-group input:focus, .input-group select:focus { border-color: var(--primary); outline: none; }
+      
+      .input-group input:focus, .input-group select:focus, .input-group textarea:focus { 
+          border-color: var(--primary); outline: none; 
+      }
+
+      /* Verstecken der Standard-Zahlenpfeile im Number-Input (hilfreiches Feature behalten wir) */
+      input[type=number]::-webkit-inner-spin-button, 
+      input[type=number]::-webkit-outer-spin-button { 
+          -webkit-appearance: none; margin: 0; 
+      }
+      input[type=number] { -moz-appearance: textfield; }
 
       .item-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-      .item-grid button { text-align: center; padding: 12px 5px; background: #27272a; border: 1px solid #3f3f46; font-size: 13px; color: #e5e7eb; }
-      .item-grid button:hover { background: #3f3f46; border-color: #52525b; }
+      .item-grid button { 
+          text-align: center; padding: 12px 5px; 
+          background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); 
+          font-size: 12px; font-weight: 500; color: #d1d5db; border-radius: 8px;
+      }
+      .item-grid button:hover { 
+          background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); color: white; 
+      }
+      
       .preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-      button.preset-btn { width: 100%; text-align: left; background: #27272a; border: 1px solid #3f3f46; padding: 10px; font-weight: 500; white-space: normal; font-size: 11px; }
-      button.preset-btn:hover { background: #3f3f46; }
+      button.preset-btn { 
+          width: 100%; text-align: left; background: rgba(255,255,255,0.03); 
+          border: 1px solid rgba(255,255,255,0.08); padding: 12px; font-weight: 500; 
+          white-space: normal; font-size: 12px; border-radius: 8px; color: #d1d5db;
+      }
+      button.preset-btn:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); color: white; }
 
       /* Object List */
       .object-list-item { 
-        padding: 8px; background: rgba(255,255,255,0.03); margin-bottom: 4px; border-radius: 4px; cursor: pointer; font-size: 12px; display: flex; justify-content: space-between; border: 1px solid transparent;
+        padding: 10px 12px; background: rgba(255,255,255,0.03); margin-bottom: 6px; 
+        border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500;
+        display: flex; justify-content: space-between; border: 1px solid transparent;
+        transition: all 0.2s; color: #d1d5db;
       }
-      .object-list-item:hover { background: rgba(255,255,255,0.06); }
-      .object-list-item.selected { border-color: var(--primary); background: rgba(59, 130, 246, 0.1); }
+      .object-list-item:hover { background: rgba(255,255,255,0.08); color: white; }
+      .object-list-item.selected { 
+          border-color: var(--primary); background: rgba(59, 130, 246, 0.15); color: white; 
+          box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+      }
 
       /* Context Menu */
       #context-menu {
         position: absolute; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(10px);
-        background: #1f2937; padding: 8px 12px; border-radius: 100px;
+        background: rgba(26, 27, 30, 0.85); padding: 8px 12px; border-radius: 100px;
         display: flex; gap: 8px; align-items: center;
-        border: 1px solid #374151; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);
+        border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+        backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
         opacity: 0; pointer-events: none; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); z-index: 3000;
       }
       #context-menu.visible { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(0); }
-      #context-menu button { border-radius: 20px; padding: 6px 14px; background: #374151; border: none; font-size: 12px; }
-      #context-menu button:hover { background: #4b5563; }
-      #context-menu button.danger { background: var(--danger); color: white; }
+      #context-menu button { border-radius: 20px; padding: 8px 16px; background: rgba(255,255,255,0.1); border: 1px solid transparent; font-size: 12px; font-weight: 600; box-shadow: none; }
+      #context-menu button:hover { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.3); transform: none; }
+      #context-menu button.danger { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); }
+      #context-menu button.danger:hover { background: rgba(239, 68, 68, 0.4); color: white; border-color: rgba(239, 68, 68, 0.5); }
 
       /* On-Screen Controls */
       #onscreen-controls {
@@ -417,56 +497,68 @@
       }
       #onscreen-controls.visible { display: flex; }
       .d-pad {
-        position: relative; width: 110px; height: 110px; background: rgba(17, 24, 39, 0.8);
+        position: relative; width: 110px; height: 110px; background: rgba(26, 27, 30, 0.6);
         border-radius: 50%; box-shadow: 0 10px 30px rgba(0,0,0,0.5); pointer-events: auto; 
-        border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(5px);
+        border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
       }
       .ctrl-btn {
         position: absolute; background: transparent; border: none; color: white; font-size: 18px; cursor: pointer;
-        display: flex; align-items: center; justify-content: center; opacity: 0.7; transition: 0.1s;
+        display: flex; align-items: center; justify-content: center; opacity: 0.7; transition: 0.1s; box-shadow: none;
       }
-      .ctrl-btn:hover { opacity: 1; color: var(--primary); }
+      .ctrl-btn:hover { opacity: 1; color: var(--primary); transform: scale(1.1); background: transparent;}
       .ctrl-btn:active { transform: scale(0.9); }
       .btn-up { top: 5px; left: 50%; transform: translateX(-50%); width: 40px; height: 35px; }
       .btn-down { bottom: 5px; left: 50%; transform: translateX(-50%); width: 40px; height: 35px; }
       .btn-left { left: 5px; top: 50%; transform: translateY(-50%); width: 35px; height: 40px; }
       .btn-right { right: 5px; top: 50%; transform: translateY(-50%); width: 35px; height: 40px; }
-      .btn-center { top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; background: rgba(255,255,255,0.1); border-radius: 50%; border: 1px solid rgba(255,255,255,0.1); }
+      .btn-center { top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; background: rgba(255,255,255,0.05); border-radius: 50%; border: 1px solid rgba(255,255,255,0.1); }
       .extra-controls { pointer-events: auto; display: flex; margin-top: 15px; }
-      .pill-group { display: flex; background: rgba(17, 24, 39, 0.8); border-radius: 100px; border: 1px solid rgba(255,255,255,0.1); overflow: hidden; }
-      .pill-btn { background: transparent; border: none; color: white; padding: 8px 16px; cursor: pointer; font-size: 16px; border-right: 1px solid rgba(255,255,255,0.1); }
+      .pill-group { display: flex; background: rgba(26, 27, 30, 0.6); border-radius: 100px; border: 1px solid rgba(255,255,255,0.1); overflow: hidden; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+      .pill-btn { background: transparent; border: none; color: white; padding: 8px 16px; cursor: pointer; font-size: 16px; border-right: 1px solid rgba(255,255,255,0.1); box-shadow: none; border-radius: 0; }
       .pill-btn:last-child { border-right: none; }
-      .pill-btn:hover { background: rgba(255,255,255,0.1); }
+      .pill-btn:hover { background: rgba(255,255,255,0.1); transform: none; }
 
       /* Modals */
       #modal-overlay, #settings-overlay {
-        position: absolute; inset: 0; background: rgba(0,0,0,0.75); z-index: 3000;
+        position: absolute; inset: 0; background: rgba(0,0,0,0.6); z-index: 3000;
         display: none; align-items: center; justify-content: center; pointer-events: auto;
-        backdrop-filter: blur(5px);
+        backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
       }
       #modal-overlay.active, #settings-overlay.active { display: flex; animation: fadeIn 0.3s ease; }
       .modal-box {
-        background: #1f2937; width: 480px; padding: 30px; border-radius: 16px;
-        border: 1px solid #374151; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        max-height: 80vh; overflow-y: auto;
+        background: rgba(26, 27, 30, 0.85); width: 480px; padding: 30px; border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+        max-height: 85vh; overflow-y: auto; backdrop-filter: blur(20px) saturate(150%); -webkit-backdrop-filter: blur(20px);
       }
-      .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; color: white; display: flex; justify-content: space-between; align-items: center; }
-      .setting-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #374151; padding-bottom: 12px; }
-      .setting-row label { color: #e5e7eb; font-weight: 500; }
+      .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 25px; color: white; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; }
+      .setting-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px; }
+      .setting-row label { color: #e5e7eb; font-weight: 500; font-size: 13px; text-transform: none; letter-spacing: normal; }
       
       /* Switch */
       .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
       .switch input { opacity: 0; width: 0; height: 0; }
-      .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #4b5563; transition: .3s; border-radius: 24px; }
-      .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-      input:checked + .slider { background-color: var(--primary); }
+      .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); transition: .3s; border-radius: 24px; }
+      .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 2px; bottom: 2px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+      input:checked + .slider { background-color: var(--primary); border-color: var(--primary); }
       input:checked + .slider:before { transform: translateX(20px); }
 
+
       /* Reports */
-      .report-item { background: rgba(255,255,255,0.03); padding: 15px; margin-bottom: 10px; border-radius: 8px; border-left: 4px solid #4b5563; }
-      .report-item.good { border-left-color: var(--success); background: rgba(16, 185, 129, 0.05); }
-      .report-item.warn { border-left-color: var(--warning); background: rgba(245, 158, 11, 0.05); }
-      .report-item.bad { border-left-color: var(--danger); background: rgba(239, 68, 68, 0.05); }
+      .report-item { 
+          background: rgba(255,255,255,0.05); padding: 16px; margin-bottom: 12px; 
+          border-radius: 8px; border-left: 4px solid #4b5563; 
+          color: #f3f4f6; /* Höherer Grundkontrast */
+          font-size: 13px;
+          border-right: 1px solid rgba(255,255,255,0.05);
+          border-top: 1px solid rgba(255,255,255,0.05);
+          border-bottom: 1px solid rgba(255,255,255,0.05);
+      }
+      .report-item span { color: #d1d5db; font-weight: 500; } /* Text Label */
+      .report-item .report-val { color: #ffffff; font-weight: 700; margin-left: 6px; font-size: 14px; } /* Der gemessene Wert */
+      
+      .report-item.good { border-left-color: var(--success); background: rgba(16, 185, 129, 0.15); }
+      .report-item.warn { border-left-color: var(--warning); background: rgba(245, 158, 11, 0.15); }
+      .report-item.bad { border-left-color: var(--danger); background: rgba(239, 68, 68, 0.2); }
 
       /* Loader - KORRIGIERT: Standardmäßig unsichtbar */
       #loader { 
@@ -793,11 +885,11 @@
       }
 
       .download-cta-btn:hover {
-          /* Beim Hover wird das Glas etwas "dichter" und leuchtet mehr */
+          /* Beim Hover wird das Glas etwas "dichter" */
           background: rgba(59, 130, 246, 0.3); 
           border-color: var(--primary); /* Rahmen wird Vollfarbe */
           transform: translateY(-3px);  /* Schwebt etwas höher */
-          box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3); /* Starker blauer Glow */
+          box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3); /* Neutraler Schatten statt Glow */
       }
 
       /* Das Hintergrund-Overlay */
@@ -1136,10 +1228,10 @@
               </select>
             </div>
             <div class="input-group">
-              <label>Anzahl</label>
-              <input type="number" id="wizard-count" value="20" min="1" max="60">
+              <label>Anzahl (Sitzplätze)</label>
+              <input type="number" id="wizard-count" value="20" min="1" max="60" placeholder="z.B. 20">
             </div>
-            <button class="primary full-width" style="width:100%; margin-top:5px;" onclick="app.runWizard()">Generieren</button>
+            <button class="primary full-width" style="width:100%; margin-top:16px; padding: 12px; letter-spacing: 0.5px;" onclick="app.runWizard()">Planung generieren</button>
           </div>
         </div>
 
@@ -1237,7 +1329,7 @@
                 </div>
 
                 <!-- Exit Button -->
-                <button id="btn-exit-simulation" class="danger solid" style="width:100%; margin-top:5px; display:none;">
+                <button id="btn-exit-simulation" class="danger solid" style="width:100%; margin-top:16px; padding: 12px; font-weight: 700; letter-spacing: 0.5px; display:none;">
                     Ansicht verlassen
                 </button>
 
